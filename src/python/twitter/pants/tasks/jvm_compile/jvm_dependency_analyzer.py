@@ -6,7 +6,7 @@ from twitter.common.collections import OrderedSet
 
 from twitter.pants.targets import JvmTarget, JarLibrary, InternalTarget, JarDependency
 from twitter.pants.tasks import TaskError, Task
-from twitter.pants import get_buildroot
+from twitter.pants.base.build_environment import get_buildroot
 
 
 class JvmDependencyAnalyzer(object):
