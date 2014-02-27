@@ -684,7 +684,7 @@ python_library(
     pants('src/python/twitter/common/config'),
     pants('src/python/twitter/common/dirutil'),
     pants('src/python/twitter/pants/targets:ruby_thrift_library'),
-    pants('src/python/twitter/pants:get_stuff'),
+    pants('src/python/twitter/pants/base:build_environment'),
   ],
 )
 

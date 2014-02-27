@@ -146,8 +146,8 @@ python_library(
   name = 'run_info',
   sources = ['run_info.py'],
   dependencies = [
+    pants(':build_environment'),
     pants('src/python/twitter/common/dirutil'),
-    pants('src/python/twitter/pants:get_stuff'),  # XXX(fixme)
   ],
 )
 
