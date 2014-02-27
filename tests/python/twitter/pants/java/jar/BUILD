@@ -1,5 +1,5 @@
 # ==================================================================================================
-# Copyright 2013 Twitter, Inc.
+# Copyright 2014 Twitter, Inc.
 # --------------------------------------------------------------------------------------------------
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this work except in compliance with the License.
@@ -14,13 +14,13 @@
 # limitations under the License.
 # ==================================================================================================
 
-python_tests(name = 'goal',
+python_tests(
+  name = 'jar',
   sources = globs('*.py'),
   dependencies = [
-    pants('3rdparty/python:mox'),
-    pants('src/python/twitter/common/util'),
-    pants('src/python/twitter/pants:pants-deps'),
-    pants('src/python/twitter/pants:pants-lib'),
-    pants('tests/python/twitter/pants/base:base-test')
+    pants('src/python/twitter/common/collections'),
+    pants('src/python/twitter/common/dirutil'),
+    pants('src/python/twitter/common/lang'),
+    pants('src/python/twitter/pants/java:jar'),
   ]
 )
