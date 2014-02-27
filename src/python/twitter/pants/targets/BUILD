@@ -13,7 +13,7 @@ python_library(
     'with_sources.py',
   ],
   dependencies = [
-    pants(':jvm'), # XXX
+    # pants(':jvm'), XXX internal.py is in :jvm, so common won't work without it.
     pants('src/python/twitter/common/collections'),
     pants('src/python/twitter/common/lang'),
     pants('src/python/twitter/pants/base:address'),
