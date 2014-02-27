@@ -14,13 +14,13 @@ python_library(
 python_library(
   name = 'context_deps',
   dependencies = [
-    pants('src/python/twitter/base:parse_context'),
-    pants('src/python/twitter/base:target'),
-    pants('src/python/twitter/base:workunit'),
     pants('src/python/twitter/common/collections'),
     pants('src/python/twitter/common/dirutil'),
     pants('src/python/twitter/common/process'),
     pants('src/python/twitter/pants/base:build_environment'),
+    pants('src/python/twitter/pants/base:parse_context'),
+    pants('src/python/twitter/pants/base:target'),
+    pants('src/python/twitter/pants/base:workunit'),
     pants('src/python/twitter/pants/java'),  # XXX(fixme)
     pants('src/python/twitter/reporting'),
     pants('src/python/twitter/targets:all'),  # XXX(fixme)
@@ -32,7 +32,7 @@ python_library(
   dependencies = [
     pants('src/python/twitter/common/dirutil'),
     pants('src/python/twitter/common/lang'),
-    pants('src/python/twitter/common/reporting'),
+    pants('src/python/twitter/pants/reporting'),
   ],
 )
 

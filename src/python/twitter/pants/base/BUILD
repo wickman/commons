@@ -78,6 +78,14 @@ python_library(
 )
 
 python_library(
+  name = 'build_root',
+  sources = ['build_root.py'],
+  dependencies = [
+    pants('src/python/twitter/common/lang'),
+  ],
+)
+
+python_library(
   name = 'config',
   sources = ['config.py'],
   dependencies = [

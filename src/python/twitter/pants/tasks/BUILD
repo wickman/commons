@@ -475,6 +475,7 @@ python_library(
   dependencies = [
     pants(':common'),
     pants('src/python/twitter/pants/java:executor'),
+    pants('src/python/twitter/pants/java:nailgun_executor'),
     pants('src/python/twitter/pants/java:distribution'),
     pants('src/python/twitter/pants/java:util'),
   ],
@@ -663,7 +664,7 @@ python_library(
   name = 'task_error',
   sources = ['task_error.py'],
   dependencies = [
-    pants('src/python/twitter/pants/base:manual'),
+    pants('src/python/twitter/pants/base:build_manual'),
   ],
 )
 

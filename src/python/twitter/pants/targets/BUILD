@@ -1,3 +1,15 @@
+# XXX this is not an advisable target going forward as we split out into build plugins
+python_library(
+  name = 'all',
+  dependencies = [
+    pants(':common'),
+    pants(':jvm'),
+    pants(':java'),
+    pants(':python'),
+    pants(':scala'),
+  ],
+)
+
 python_library(
   name = 'common',
   sources = [
@@ -18,7 +30,7 @@ python_library(
     pants('src/python/twitter/common/lang'),
     pants('src/python/twitter/pants/base:address'),
     pants('src/python/twitter/pants/base:build_environment'),
-    pants('src/python/twitter/pants/base:manual'),
+    pants('src/python/twitter/pants/base:build_manual'),
     pants('src/python/twitter/pants/base:parse_context'),
     pants('src/python/twitter/pants/base:target'),
   ],
@@ -82,7 +94,7 @@ python_library(
     pants(':common'),
     pants(':jvm'),
     pants('src/python/twitter/common/collections'),
-    pants('src/python/twitter/pants/base:manual'),
+    pants('src/python/twitter/pants/base:build_manual'),
     pants('src/python/twitter/pants/base:target'),
   ],
 )

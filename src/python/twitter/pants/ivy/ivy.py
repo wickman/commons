@@ -26,7 +26,8 @@ from twitter.common.lang import Compatibility
 from twitter.common.quantity import Amount, Time
 
 from twitter.pants.base.config import Config
-from twitter.pants.java import Executor, SubprocessExecutor, util
+from twitter.pants.java.executor import Executor, SubprocessExecutor
+from twitter.pants.java import util
 from twitter.pants.net.http.fetcher import Fetcher
 
 
