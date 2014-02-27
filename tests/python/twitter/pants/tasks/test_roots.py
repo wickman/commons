@@ -6,8 +6,8 @@ from twitter.pants import get_buildroot
 from twitter.pants.base.target import Target
 from twitter.pants.targets.sources import SourceRoot
 from twitter.pants.tasks.roots import ListRoots
+from twitter.pants.tasks.test_base import ConsoleTaskTest
 
-from . import ConsoleTaskTest
 
 @contextmanager
 def register_sourceroot():
