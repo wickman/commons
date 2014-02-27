@@ -22,7 +22,7 @@ python_library(
     pants('src/python/twitter/pants/base:address'),
     pants('src/python/twitter/pants/base:build_root'),
     pants('src/python/twitter/pants/base:target'),
-    pants('src/python/twitter/pants/targets:sources'),
+    pants('src/python/twitter/pants/targets:common'),
   ]
 )
 

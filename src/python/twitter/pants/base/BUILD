@@ -130,6 +130,7 @@ python_library(
   dependencies = [
     pants(':build_environment'),
     pants(':build_file'),
+    pants(':build_file_context'),
     pants(':config'),
     pants('src/python/twitter/common/dirutil'),
     pants('src/python/twitter/common/lang'),

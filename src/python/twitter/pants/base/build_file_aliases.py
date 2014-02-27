@@ -17,7 +17,6 @@
 from twitter.pants.targets.annotation_processor import AnnotationProcessor
 from twitter.pants.targets.artifact import Artifact
 from twitter.pants.targets.benchmark import Benchmark
-from twitter.pants.targets.bundle import Bundle
 from twitter.pants.targets.credentials import Credentials
 from twitter.pants.targets.doc import Page, Wiki
 from twitter.pants.targets.exclude import Exclude
@@ -29,8 +28,7 @@ from twitter.pants.targets.java_library import JavaLibrary
 from twitter.pants.targets.java_protobuf_library import JavaProtobufLibrary
 from twitter.pants.targets.java_tests import JavaTests
 from twitter.pants.targets.java_thrift_library import JavaThriftLibrary
-from twitter.pants.targets.jvm_app import JvmApp
-from twitter.pants.targets.jvm_binary import JvmBinary
+from twitter.pants.targets.jvm_binary import Bundle, JvmApp, JvmBinary
 from twitter.pants.targets.pants_target import Pants
 from twitter.pants.targets.python_antlr_library import PythonAntlrLibrary
 from twitter.pants.targets.python_artifact import PythonArtifact

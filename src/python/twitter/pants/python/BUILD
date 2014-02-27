@@ -131,6 +131,9 @@ python_library(
     pants('src/python/twitter/pants/base:parse_context'),
     pants('src/python/twitter/pants/base:target'),
     pants('src/python/twitter/pants/targets:python'),
+    pants('3rdparty/python:coverage'),
+    pants('3rdparty/python:pytest'),
+    pants('3rdparty/python:pytest-cov'),
   ],
 )
 

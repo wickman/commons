@@ -25,8 +25,11 @@ from zipfile import ZipFile
 from twitter.pants.base.build_environment import get_buildroot
 from twitter.pants.base.parse_context import ParseContext
 from twitter.pants.python.python_chroot import PythonChroot
-from twitter.pants.targets import JavaLibrary, JvmBinary, ScalaLibrary
+from twitter.pants.targets.java_library import JavaLibrary
+from twitter.pants.targets.jvm_binary import JvmBinary
+from twitter.pants.targets.scala_library import ScalaLibrary
 from twitter.pants.tasks import Task
+
 
 def reinstall(context):
   pex = os.path.join(ROOT_DIR, 'pants.pex')
@@ -218,7 +221,7 @@ goal(name='checkstyle',
      dependencies=['gen', 'resolve']).install('compile')
 
 
-from twitter.pants import set_scm
+from twitter.pants.base.build_environment import set_scm
 from twitter.pants.scm.git import Git
 
 set_scm(Git(worktree=get_buildroot(), remote='origin', branch='master'))
