@@ -18,6 +18,7 @@ python_library(
   dependencies = [
     pants('src/python/twitter/common/log'),
     pants('src/python/twitter/pants/version'),
+    pants('src/python/twitter/pants/scm:all'),
     pants(':build_root'),
   ]
 )
@@ -48,7 +49,7 @@ python_library(
     pants(':build_file_helpers'),
     pants(':config'),
     pants('src/python/twitter/pants/goal'),
-    pants('src/python/twitter/pants/targets:pants'),
+    pants('src/python/twitter/pants/targets:common'),
     pants('src/python/twitter/pants/tasks:common'),
   ]
 )
@@ -97,7 +98,7 @@ python_library(
   name = 'double_dag',
   sources = ['double_dag.py'],
   dependencies = [
-    pants(':abbreviate_taret_ids'),
+    pants(':abbreviate_target_ids'),
   ]
 )
 

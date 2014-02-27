@@ -32,7 +32,7 @@ python_library(
 )
 
 python_library(
-  name = 'nailgun_client'
+  name = 'nailgun_client',
   sources = ['nailgun_client.py'],
 )
 

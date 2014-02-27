@@ -21,8 +21,9 @@ import subprocess
 from twitter.common.config import Properties
 from twitter.common.dirutil import safe_mkdir
 from twitter.pants.base.build_environment import get_scm
-from twitter.pants.targets import RubyThriftLibrary
+from twitter.pants.targets.ruby_thrift_library import RubyThriftLibrary
 from twitter.pants.tasks.scm_publish import ScmPublish, Semver
+
 from . import Task, TaskError
 
 

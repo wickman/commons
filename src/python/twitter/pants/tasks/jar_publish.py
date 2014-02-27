@@ -37,7 +37,8 @@ from twitter.pants.base.address import Address
 from twitter.pants.base.target import Target
 from twitter.pants.base.generator import Generator, TemplateData
 from twitter.pants.ivy import Bootstrapper, Ivy
-from twitter.pants.targets import InternalTarget, Resources
+from twitter.pants.targets.internal import InternalTarget
+from twitter.pants.targets.resources import Resources
 from twitter.pants.tasks.scm_publish import ScmPublish, Semver
 
 from . import Task, TaskError

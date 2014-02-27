@@ -16,7 +16,7 @@
 
 from textwrap import dedent
 
-from twitter.pants.base import TargetDefinitionException
+from twitter.pants.base.target import TargetDefinitionException
 from twitter.pants.tasks.what_changed import WhatChanged, Workspace
 
 from . import ConsoleTaskTest
