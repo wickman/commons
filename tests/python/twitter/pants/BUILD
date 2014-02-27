@@ -46,8 +46,9 @@ python_tests(
   ]
 )
 
-python_test_suite(name='all',
-  dependencies=[
+python_test_suite(
+  name = 'all',
+  dependencies = [
     pants(':test_maven_layout'),
     pants(':test_thrift_util'),
     pants('tests/python/twitter/pants/base'),
