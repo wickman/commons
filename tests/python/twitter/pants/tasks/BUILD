@@ -121,7 +121,7 @@ python_tests(
   name = 'config',
   sources = ['test_config.py'],
   dependencies = [
-    pants('src/python/twitter/common/dirutil'),
+    pants('src/python/twitter/common/contextutil'),
     pants('src/python/twitter/pants/base:config'),
   ]
 )
@@ -206,6 +206,8 @@ python_tests(
   sources = ['test_filter.py'],
   dependencies = [
     pants(':base-test'),
+    pants('src/python/twitter/pants/targets:java'),
+    pants('src/python/twitter/pants/targets:python'),
     pants('src/python/twitter/pants/tasks:filter'),
   ],
 )
@@ -235,7 +237,7 @@ python_tests(
   dependencies = [
     pants('src/python/twitter/pants/base:parse_context'),
     pants('src/python/twitter/pants/base:target'),
-    pants('src/python/twitter/pants/targets:jar_library'),
+    pants('src/python/twitter/pants/targets:jvm'),
   ],
 )
 

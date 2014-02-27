@@ -35,10 +35,10 @@ from twitter.common.dirutil import safe_rmtree, safe_mkdir
 from twitter.common.lang import Compatibility
 from twitter.common.log.options import LogOptions
 from twitter.pants import binary_util
-from twitter.pants.base.address import address
+from twitter.pants.base.address import Address
 from twitter.pants.base.build_environment import get_buildroot
 from twitter.pants.base.build_file import BuildFile
-from twitter.pants.base.config import COnfig
+from twitter.pants.base.config import Config
 from twitter.pants.base.parse_context import ParseContext
 from twitter.pants.base.rcfile import RcFile
 from twitter.pants.base.target import Target, TargetDefinitionException

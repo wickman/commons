@@ -76,10 +76,11 @@ python_library(
 python_library(
   name = 'builddictionary',
   sources = ['builddictionary.py'],
+  resources = globs('templates/builddictionary/*.mustache'),
   dependencies = [
     pants(':common'),
     pants('src/python/twitter/common/dirutil'),    
-    pants('src/python/twitter/pants/base:build_file_helpers'),    
+    pants('src/python/twitter/pants/base:build_file_helpers'),
     pants('src/python/twitter/pants/base:generator'),    
     pants('src/python/twitter/pants/goal:phase'),
     pants('3rdparty/python:setuptools'),
@@ -228,6 +229,7 @@ python_library(
 python_library(
   name = 'eclipse_gen',
   sources = ['eclipse_gen.py'],
+  resources = globs('templates/eclipse/*.mustache'),
   dependencies = [
     pants(':common'),
     pants(':ide_gen'),
@@ -293,6 +295,7 @@ python_library(
 python_library(
   name = 'idea_gen',
   sources = ['idea_gen.py'],
+  resources = globs('templates/idea/*.mustache'),
   dependencies = [
     pants(':common'),
     pants(':ide_gen'),
@@ -308,6 +311,7 @@ python_library(
 python_library(
   name = 'ivy_resolve',
   sources = ['ivy_resolve.py'],
+  resources = globs('templates/ivy_resolve/*.mustache'),
   dependencies = [
     pants(':common'),
     pants(':cache_manager'),
@@ -353,6 +357,7 @@ python_library(
 python_library(
   name = 'jar_publish',
   sources = ['jar_publish.py'],
+  resources = globs('templates/jar_publish/*.mustache'),
   dependencies = [
     pants(':common'),
     pants(':scm_publish'),

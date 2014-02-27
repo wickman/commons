@@ -131,7 +131,7 @@ class FilterTest(BaseFilterTest):
       'overlaps/BUILD:two',
       'overlaps/BUILD:three',
       'overlaps/BUILD:foo',
-      args=['--test-type=PythonRequirement,twitter.pants.targets.PythonLibrary'],
+      args=['--test-type=PythonRequirement,twitter.pants.targets.python_library.PythonLibrary'],
       targets=self.targets('::')
     )
 

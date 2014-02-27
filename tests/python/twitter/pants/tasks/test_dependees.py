@@ -16,7 +16,7 @@
 
 from textwrap import dedent
 
-from twitter.pants import get_buildroot
+from twitter.pants.base.build_environment import get_buildroot
 from twitter.pants.targets.python_tests import PythonTests, PythonTestSuite
 from twitter.pants.targets.sources import SourceRoot
 from twitter.pants.tasks import TaskError
