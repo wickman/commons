@@ -1,7 +1,8 @@
 import os
 import pkgutil
-import pystache
 import urlparse
+
+import pystache
 
 
 class MustacheRenderer(object):
