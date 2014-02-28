@@ -84,6 +84,7 @@ python_tests(
   name = 'python_binary',
   sources = ['test_python_binary.py'],
   dependencies = [
+    pants('tests/python/twitter/pants:base-test'),
     pants('src/python/twitter/pants/base:parse_context'),
     pants('src/python/twitter/pants/base:target'),
     pants('src/python/twitter/pants/targets:python'),

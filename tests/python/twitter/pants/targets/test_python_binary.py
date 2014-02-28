@@ -14,8 +14,10 @@
 # limitations under the License.
 # ==================================================================================================
 
+from textwrap import dedent
 import unittest
 
+from twitter.pants.base_build_root_test import BaseBuildRootTest
 from twitter.pants.base.parse_context import ParseContext
 from twitter.pants.base.target import Target, TargetDefinitionException
 from twitter.pants.targets.python_binary import PythonBinary
@@ -23,18 +25,24 @@ from twitter.pants.targets.python_binary import PythonBinary
 import pytest
 
 
-class TestPythonBinary(unittest.TestCase):
+# TODO(wickman) Figure out how this should work.
+class TestPythonBinary(BaseBuildRootTest):
   def tearDown(self):
     Target._clear_all_addresses()
 
   def test_python_binary_must_have_some_entry_point(self):
-    with ParseContext.temp('src'):
-      with pytest.raises(TargetDefinitionException):
-        PythonBinary(name = 'binary')
+    with pytest.raises(TargetDefinitionException):
+      self.create_target('test_validate',
+        dedent('''
+          python_binary(name = 'binary')
+        '''))
+      self.target('test_validate:binary')
 
+  """
   def test_python_binary_with_entry_point_no_source(self):
-    with ParseContext.temp('src'):
-      assert PythonBinary(name = 'binary', entry_point = 'blork').entry_point == 'blork'
+    self.create_target('test_validate', "python_binary(name = 'binary', entry_point = 'blork')")
+    print('target: %s' % self.target('test_validate:test_validate'))
+    assert self.target('test_validate/BUILD:binary').entry_point == 'blork'
 
   def test_python_binary_with_source_no_entry_point(self):
     with ParseContext.temp('src'):
@@ -60,3 +68,4 @@ class TestPythonBinary(unittest.TestCase):
         PythonBinary(name = 'binary3', entry_point = 'bin.blork', source='blork.py')
       with pytest.raises(TargetDefinitionException):
         PythonBinary(name = 'binary4', entry_point = 'bin.blork', source='bin.py')
+  """

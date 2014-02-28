@@ -59,7 +59,7 @@ python_test_suite(
     pants('tests/python/twitter/pants/java'),
     pants('tests/python/twitter/pants/net'),
     pants('tests/python/twitter/pants/process'),
-    pants('tests/python/twitter/pants/python:all'),
+    pants('tests/python/twitter/pants/python'),
     pants('tests/python/twitter/pants/reporting'),
     pants('tests/python/twitter/pants/scm'),
     pants('tests/python/twitter/pants/targets'),
