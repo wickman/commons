@@ -58,7 +58,7 @@ python_library(
   name = 'build_file_helpers',  # XXX(fixme)
   sources = ['build_file_helpers.py'],
   dependencies = [
-    pants('src/python/twitter/pants/targets:all'),  # XXX(fixme)    
+    pants('src/python/twitter/pants/targets:all'),  # XXX(fixme)
   ]
 )
 

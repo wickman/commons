@@ -69,4 +69,4 @@ python_library(
   dependencies = [
     pants(':binary_util'),
   ],
-)  
+)

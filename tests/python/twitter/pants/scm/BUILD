@@ -21,7 +21,7 @@ python_test_suite(
   ]
 )
 
-python_tests(  
+python_tests(
   name = 'test_git',
   sources = ['test_git.py'],
   dependencies = [

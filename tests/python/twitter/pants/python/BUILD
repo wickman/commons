@@ -16,7 +16,7 @@
 
 python_test_suite(
   name = 'all',
-  dependencies = [ 
+  dependencies = [
     pants(':python'),
   ],
 )

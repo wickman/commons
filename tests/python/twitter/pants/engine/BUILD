@@ -29,7 +29,7 @@ python_test_suite(
     pants(':test_group_engine'),
   ]
 )
-  
+
 python_tests(
   name = 'test_engine',
   sources = ['test_engine.py'],
