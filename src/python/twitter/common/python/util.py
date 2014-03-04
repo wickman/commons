@@ -34,7 +34,7 @@ class DistributionHelper(object):
     """Returns whether or not we determine a distribution is zip-safe.
 
        Only works for egg distributions."""
-    egg_metadata = dist.metadata_listdir('/')
+    egg_metadata = dist.metadata_listdir('')
     return 'zip-safe' in egg_metadata and 'native_libs.txt' not in egg_metadata
 
   @classmethod
