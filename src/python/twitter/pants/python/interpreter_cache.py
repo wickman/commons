@@ -95,9 +95,9 @@ def failsafe_parse(requirement):
 
 def resolve(config, interpreter, logger=print):
   setuptools_requirement = failsafe_parse(
-      'setuptools==%s' % config.get('python-setup', 'setuptools_version'))
+      'setuptools==%s' % config.getdefault('python-setup', 'setuptools_version', '2.2'))
   wheel_requirement = failsafe_parse(
-      'wheel==%s' % config.get('python-setup', 'wheel_version'))
+      'wheel==%s' % config.getdefault('python-setup', 'wheel_version', '0.22.0'))
 
   interpreter = resolve_interpreter(config, interpreter, setuptools_requirement, logger=logger)
   if interpreter:
