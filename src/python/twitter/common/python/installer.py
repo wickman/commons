@@ -204,7 +204,20 @@ class Installer(InstallerBase):
     return Distribution.from_location(base_dir, os.path.basename(egg_info), metadata=metadata)
 
 
-class Packager(InstallerBase):
+class DistributionPackager(InstallerBase):
+  @classmethod
+  def find_distribution(cls, install_tmp):
+    dists = os.listdir(install_tmp)
+    if len(dists) == 0:
+      raise self.InstallFailure('No distributions were produced!')
+    elif len(dists) > 1:
+      raise self.InstallFailure('Ambiguous source distributions found: %s' % (
+          ' '.join(dists)))
+    else:
+      return os.path.join(install_tmp, dists[0])
+
+
+class Packager(DistributionPackager):
   """
     Create a source distribution from an unpacked setup.py-based project.
   """
@@ -215,13 +228,10 @@ class Packager(InstallerBase):
 
   @after_installation
   def sdist(self):
-    dists = os.listdir(self._install_tmp)
-    if len(dists) != 1:
-      raise self.InstallFailure('Ambiguous source distributions found.')
-    return os.path.join(self._install_tmp, dists[0])
+    return self.find_distribution(self._install_tmp)
 
 
-class EggInstaller(InstallerBase):
+class EggInstaller(DistributionPackager):
   """
     Create a source distribution from an unpacked setup.py-based project.
   """
@@ -234,13 +244,10 @@ class EggInstaller(InstallerBase):
 
   @after_installation
   def bdist(self):
-    dists = os.listdir(self._install_tmp)
-    if len(dists) != 1:
-      raise self.InstallFailure('Ambiguous source distributions found.')
-    return os.path.join(self._install_tmp, dists[0])
+    return self.find_distribution(self._install_tmp)
 
 
-class WheelInstaller(InstallerBase):
+class WheelInstaller(DistributionPackager):
   """
     Create a source distribution from an unpacked setup.py-based project.
   """
@@ -254,7 +261,4 @@ class WheelInstaller(InstallerBase):
 
   @after_installation
   def bdist(self):
-    dists = os.listdir(self._install_tmp)
-    if len(dists) != 1:
-      raise self.InstallFailure('Ambiguous source distributions found.')
-    return os.path.join(self._install_tmp, dists[0])
+    return self.find_distribution(self._install_tmp)
