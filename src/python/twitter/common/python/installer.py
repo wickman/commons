@@ -144,9 +144,9 @@ class Installer(InstallerBase):
       >>> tornado_distribution.activate()
       >>> import tornado
 
-    Alternately you can pass the distribution to a Distiller object and convert it to an egg:
-      >>> from twitter.common.python.distiller import Distiller
-      >>> Distiller(tornado_distribution).distill()
+    Alternately you can use the EggInstaller to create an egg instead:
+      >>> from twitter.common.python.installer import EggInstaller
+      >>> EggInstaller(tornado_tgz.fetch()).bdist()
       '/var/folders/Uh/UhXpeRIeFfGF7HoogOKC+++++TI/-Tmp-/tmpufgZOO/tornado-2.3-py2.6.egg'
   """
   def __init__(self, source_dir, strict=True, interpreter=None):
