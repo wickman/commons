@@ -43,6 +43,28 @@ def safe_link(src, dst):
   os.symlink(src, dst)
 
 
+def resolve_interpreter(config, interpreter, requirement, logger=print):
+  """Given a :class:`PythonInterpreter` and :class:`Config`, and a requirement,
+     return an interpreter with the capability of resolving that requirement or
+     None if it's not possible to install a suitable requirement."""
+  interpreter_cache = config.get('python-setup', 'interpreter_cache')
+  interpreter_dir = os.path.join(interpreter_cache, str(interpreter.identity))
+  if interpreter.satisfies(PythonCapability([requirement])):
+    return interpreter
+  def installer_provider(sdist):
+    return EggInstaller(sdist, strict=requirement.key != 'setuptools', interpreter=interpreter)
+  egg = resolve_and_link(
+      config,
+      requirement,
+      os.path.join(interpreter_dir, requirement.key),
+      installer_provider,
+      logger=logger)
+  if egg:
+    return interpreter.with_extra(egg.name, egg.raw_version, egg.url)
+  else:
+    logger('Failed to resolve requirement %s for %s' % (requirement, interpreter))
+
+
 def resolve_and_link(config, requirement, target_link, installer_provider, logger=print):
   if os.path.exists(target_link) and os.path.exists(os.path.realpath(target_link)):
     egg = EggLink(os.path.realpath(target_link))
@@ -66,26 +88,12 @@ def resolve_and_link(config, requirement, target_link, installer_provider, logge
     return EggLink(target_location)
 
 
-def resolve_interpreter(config, interpreter, requirement, logger=print):
-  """Given a :class:`PythonInterpreter` and :class:`Config`, return the interpreter annotated
-     with the proper setuptools requirement, or None if that is not possible."""
-  interpreter_cache = config.get('python-setup', 'interpreter_cache')
-  interpreter_dir = os.path.join(interpreter_cache, str(interpreter.identity))
-  if interpreter.satisfies(PythonCapability([requirement])):
-    return interpreter
-  def installer_provider(sdist):
-    return EggInstaller(sdist, strict=requirement.key != 'setuptools', interpreter=interpreter)
-  egg = resolve_and_link(
-      config,
-      requirement,
-      os.path.join(interpreter_dir, requirement.key),
-      installer_provider,
-      logger=logger)
-  assert egg.local
-  if egg:
-    return interpreter.with_extra(egg.name, egg.raw_version, egg.url)
-
-
+# This is a setuptools <1 and >1 compatible version of Requirement.parse.
+# For setuptools <1, if you did Requirement.parse('setuptools'), it would
+# return 'distribute' which of course is not desirable for us.  So they
+# added a replacement=False keyword arg.  Sadly, they removed this keyword
+# arg in setuptools >= 1 so we have to simply failover using TypeError as a
+# catch for 'Invalid Keyword Argument'.
 def failsafe_parse(requirement):
   try:
     return Requirement.parse(requirement, replacement=False)
@@ -94,6 +102,8 @@ def failsafe_parse(requirement):
 
 
 def resolve(config, interpreter, logger=print):
+  """Resolve and cache an interpreter with a setuptools and wheel capability."""
+
   setuptools_requirement = failsafe_parse(
       'setuptools==%s' % config.getdefault('python-setup', 'setuptools_version', '2.2'))
   wheel_requirement = failsafe_parse(

@@ -36,7 +36,7 @@ python_library(
   name = 'build_file_aliases',
   sources = ['build_file_aliases.py'],
   dependencies = [
-    pants('src/python/twitter/pants/targets:all'),  # XXX(fixme)
+    # pants('src/python/twitter/pants/targets:all'),  # XXX(fixme)
   ]
 )
 
@@ -44,13 +44,13 @@ python_library(
   name = 'build_file_context',  # XXX(fixme)
   sources = ['build_file_context.py'],
   dependencies = [
-    pants(':build_environment'),
-    pants(':build_file_aliases'),
-    pants(':build_file_helpers'),
-    pants(':config'),
-    pants('src/python/twitter/pants/goal'),
-    pants('src/python/twitter/pants/targets:common'),
-    pants('src/python/twitter/pants/tasks:common'),
+    #pants(':build_environment'),
+    #pants(':build_file_aliases'),
+    #pants(':build_file_helpers'),
+    #pants(':config'),
+    #pants('src/python/twitter/pants/goal'),
+    #pants('src/python/twitter/pants/targets:common'),
+    #pants('src/python/twitter/pants/tasks:common'),
   ]
 )
 
@@ -58,7 +58,7 @@ python_library(
   name = 'build_file_helpers',  # XXX(fixme)
   sources = ['build_file_helpers.py'],
   dependencies = [
-    pants('src/python/twitter/pants/targets:all'),  # XXX(fixme)
+    # pants('src/python/twitter/pants/targets:all'),  # XXX(fixme)
   ]
 )
 

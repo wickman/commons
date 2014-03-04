@@ -44,12 +44,6 @@ exec(compile(open(__file__).read().replace('\\r\\n', '\\n'), __file__, 'exec'))
   class InstallFailure(Error): pass
   class IncapableInterpreter(Error): pass
 
-  @classmethod
-  def cleaned_environment(cls):
-    env = os.environ.copy()
-    env.pop('MACOSX_DEPLOYMENT_TARGET', None)
-    return env
-
   def __init__(self, source_dir, strict=True, interpreter=None, install_dir=None):
     """
       Create an installer from an unpacked source distribution in source_dir.
@@ -110,7 +104,7 @@ exec(compile(open(__file__).read().replace('\\r\\n', '\\n'), __file__, 'exec'))
           stdin=subprocess.PIPE,
           stdout=subprocess.PIPE,
           stderr=subprocess.PIPE,
-          env=self.cleaned_environment(),
+          env=self._interpreter.sanitized_environment(),
           cwd=self._source_dir)
       so, se = po.communicate(self.bootstrap_script.encode('ascii'))
       self._installed = po.returncode == 0

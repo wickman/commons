@@ -239,7 +239,7 @@ class PythonInterpreter(object):
         [binary],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
-        env={'PYTHONPATH': ':'.join(path_extras)})
+        env=environ)
     so, _ = po.communicate(ID_PY)
     output = so.decode('utf8').splitlines()
     if len(output) == 0:
