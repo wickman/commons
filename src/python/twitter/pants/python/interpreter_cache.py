@@ -134,7 +134,7 @@ class PythonInterpreterCache(object):
     except OSError:
       return None
     interpreter = PythonInterpreter(executable, identity)
-    return resolve(self._config, interpreter)
+    return resolve(self._config, interpreter, logger=self._logger)
 
   def setup_interpreter(self, interpreter):
     interpreter_dir = os.path.join(self._path, str(interpreter.identity))
