@@ -27,12 +27,6 @@ def after_installation(function):
 
 
 class InstallerBase(object):
-  # The module => requirement mapping for the basic setup.py runner.
-  # Subclasses should extend this to their requirement set, or update the "mixins" property.
-  MIXINS = {
-    'setuptools': 'setuptools>=1.1.7',
-  }
-
   SETUP_BOOTSTRAP_HEADER = "import sys"
   SETUP_BOOTSTRAP_MODULE = "sys.path.insert(0, %(path)r); import %(module)s"
   SETUP_BOOTSTRAP_FOOTER = """
@@ -60,6 +54,13 @@ exec(compile(open(__file__).read().replace('\\r\\n', '\\n'), __file__, 'exec'))
       raise self.IncapableInterpreter('Interpreter %s not capable of running %s' % (
           self._interpreter, self.__class__.__name__))
 
+  def mixins(self):
+    """Return a map from import name to requirement to load into setup script prior to invocation.
+
+       May be subclassed.
+    """
+    return {}
+
   @property
   def install_tmp(self):
     return self._install_tmp
@@ -74,12 +75,12 @@ exec(compile(open(__file__).read().replace('\\r\\n', '\\n'), __file__, 'exec'))
   @property
   def capability(self):
     """returns the PythonCapability necessary for the interpreter to run this installer."""
-    return PythonCapability(self.mixins.values())
+    return PythonCapability(self.mixins().values())
 
   @property
   def bootstrap_script(self):
     bootstrap_modules = []
-    for module, requirement in self.mixins.items():
+    for module, requirement in self.mixins().items():
       path = self._interpreter.get_location(requirement)
       if not path:
         assert not self._strict  # This should be caught by validation
@@ -87,11 +88,6 @@ exec(compile(open(__file__).read().replace('\\r\\n', '\\n'), __file__, 'exec'))
       bootstrap_modules.append(self.SETUP_BOOTSTRAP_MODULE % {'path': path, 'module': module})
     return '\n'.join(
         [self.SETUP_BOOTSTRAP_HEADER] + bootstrap_modules + [self.SETUP_BOOTSTRAP_FOOTER])
-
-  @property
-  def mixins(self):
-    # returns a map of module => requirement_or_str to satisfy this installer
-    return self.MIXINS
 
   def run(self):
     if self._installed is not None:
@@ -205,30 +201,26 @@ class Installer(InstallerBase):
 
 
 class DistributionPackager(InstallerBase):
-  @classmethod
-  def find_distribution(cls, install_tmp):
-    dists = os.listdir(install_tmp)
+  def find_distribution(self):
+    dists = os.listdir(self.install_tmp)
     if len(dists) == 0:
       raise self.InstallFailure('No distributions were produced!')
     elif len(dists) > 1:
-      raise self.InstallFailure('Ambiguous source distributions found: %s' % (
-          ' '.join(dists)))
+      raise self.InstallFailure('Ambiguous source distributions found: %s' % (' '.join(dists)))
     else:
-      return os.path.join(install_tmp, dists[0])
+      return os.path.join(self.install_tmp, dists[0])
 
 
 class Packager(DistributionPackager):
   """
     Create a source distribution from an unpacked setup.py-based project.
   """
-  MIXINS = {}
-
   def _setup_command(self):
     return ['sdist', '--formats=gztar', '--dist-dir=%s' % self._install_tmp]
 
   @after_installation
   def sdist(self):
-    return self.find_distribution(self._install_tmp)
+    return self.find_distribution()
 
 
 class EggInstaller(DistributionPackager):
@@ -239,12 +231,17 @@ class EggInstaller(DistributionPackager):
       'setuptools': 'setuptools>=1',
   }
 
+  def mixins(self):
+    mixins = super(EggInstaller, self).mixins().copy()
+    mixins.update(self.MIXINS)
+    return mixins
+
   def _setup_command(self):
     return ['bdist_egg', '--dist-dir=%s' % self._install_tmp]
 
   @after_installation
   def bdist(self):
-    return self.find_distribution(self._install_tmp)
+    return self.find_distribution()
 
 
 class WheelInstaller(DistributionPackager):
@@ -256,9 +253,14 @@ class WheelInstaller(DistributionPackager):
       'wheel': 'wheel>=0.17',
   }
 
+  def mixins(self):
+    mixins = super(WheelInstaller, self).mixins().copy()
+    mixins.update(self.MIXINS)
+    return mixins
+
   def _setup_command(self):
     return ['bdist_wheel', '--dist-dir=%s' % self._install_tmp]
 
   @after_installation
   def bdist(self):
-    return self.find_distribution(self._install_tmp)
+    return self.find_distribution()
