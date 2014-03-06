@@ -11,7 +11,7 @@ from .installer import Installer, EggInstaller
 from .interpreter import PythonInterpreter
 from .platforms import Platform
 from .tracer import TRACER
-from .wheel import distribution_from_zipped_wheel
+from .util import DistributionHelper
 
 from pkg_resources import Distribution, EggMetadata, PathMetadata
 
@@ -41,15 +41,6 @@ class ChainedTranslator(TranslatorBase):
       dist = tx.translate(link)
       if dist:
         return dist
-
-
-def dist_from_egg(egg_path):
-  if os.path.isdir(egg_path):
-    metadata = PathMetadata(egg_path, os.path.join(egg_path, 'EGG-INFO'))
-  else:
-    # Assume it's a file or an internal egg
-    metadata = EggMetadata(zipimporter(egg_path))
-  return Distribution.from_filename(egg_path, metadata=metadata)
 
 
 class SourceTranslator(TranslatorBase):
@@ -124,39 +115,14 @@ class SourceTranslator(TranslatorBase):
         safe_rmtree(unpack_path)
 
 
-class EggTranslator(TranslatorBase):
+class BinaryTranslator(TranslatorBase):
   def __init__(self,
+               link_type,
                install_cache=None,
                interpreter=PythonInterpreter.get(),
                platform=Platform.current(),
                conn_timeout=None):
-    self._install_cache = install_cache or safe_mkdtemp()
-    self._platform = platform
-    self._python = interpreter.python
-    self._conn_timeout = conn_timeout
-
-  def translate(self, link):
-    """From a link, translate a distribution."""
-    if not isinstance(link, EggLink):
-      return None
-    if not Platform.distribution_compatible(link, python=self._python, platform=self._platform):
-      return None
-    try:
-      egg = link.fetch(location=self._install_cache, conn_timeout=self._conn_timeout)
-    except link.UnreadableLink as e:
-      TRACER.log('Failed to fetch %s: %s' % (link, e))
-      return None
-    return dist_from_egg(egg)
-
-
-# TODO(wickman) Collapse this with the EggTranslator.  Just need to have a
-# generic Distribution.from_path(...) method.
-class WheelTranslator(TranslatorBase):
-  def __init__(self,
-               install_cache=None,
-               interpreter=PythonInterpreter.get(),
-               platform=Platform.current(),
-               conn_timeout=None):
+    self._link_type = link_type
     self._install_cache = install_cache or safe_mkdtemp()
     self._platform = platform
     self._identity = interpreter.identity
@@ -164,17 +130,17 @@ class WheelTranslator(TranslatorBase):
 
   def translate(self, link):
     """From a link, translate a distribution."""
-    if not isinstance(link, WheelLink):
+    if not isinstance(link, link_type):
       return None
     if not link.compatible(identity=self._identity, platform=self._platform):
       return None
     try:
-      whl = link.fetch(location=self._install_cache, conn_timeout=self._conn_timeout)
+      bdist = link.fetch(location=self._install_cache, conn_timeout=self._conn_timeout)
     except link.UnreadableLink as e:
       TRACER.log('Failed to fetch %s: %s' % (link, e))
       return None
     print('Returning dist!  %s' % whl)
-    return distribution_from_zipped_wheel(whl)
+    return DistributionHelper.distribution_from_path(bdist)
 
 
 class Translator(object):
@@ -184,7 +150,8 @@ class Translator(object):
               interpreter=PythonInterpreter.get(),
               conn_timeout=None):
 
-    egg_translator = EggTranslator(
+    egg_translator = BinaryTranslator(
+        EggLink,
         install_cache=install_cache,
         platform=platform,
         interpreter=interpreter,

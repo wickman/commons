@@ -25,7 +25,6 @@ from .common import chmod_plus_x, open_zip, safe_mkdir, Chroot
 from .interpreter import PythonInterpreter
 from .marshaller import CodeMarshaller
 from .pex_info import PexInfo
-from .translator import dist_from_egg
 from .util import CacheHelper, DistributionHelper
 
 from pkg_resources import (
@@ -197,7 +196,8 @@ class PEXBuilder(object):
       Write enough of distribute into the .pex .bootstrap directory so that
       we can be fully self-contained.
     """
-    setuptools = dist_from_egg(self._interpreter.get_location('setuptools'))
+    setuptools = DistributionHelper.distribution_from_path(
+        self._interpreter.get_location('setuptools'))
     for fn, content_stream in DistributionHelper.walk_data(setuptools):
       if fn == 'pkg_resources.py':
         self._chroot.write(content_stream.read(),

@@ -60,13 +60,20 @@ class PEXEnvironment(Environment):
         TRACER.log('Adding to the head of %s.__path__: %s' % (module.__name__, module_dir))
         module.__path__.insert(0, module_dir)
 
+  # N.B. wheel support for:
+  #
+  # 1. DistributionHelper.distribution_from_path
+  # 2. DistributionHelper.zipsafe
+  # 3. CacheHelper.cache_distribution [which uses find_distributions]
   @classmethod
   def write_zipped_internal_cache(cls, pex, pex_info):
     prefix_length = len(pex_info.internal_cache) + 1
     distributions = []
     with open_zip(pex) as zf:
+      # Distribution names are the first element after ".deps/" and before the next "/"
       distribution_names = set(filter(None, (filename[prefix_length:].split('/')[0]
           for filename in zf.namelist() if filename.startswith(pex_info.internal_cache))))
+      # Create Distribution objects from these, and possibly write to disk if necessary.
       for distribution_name in distribution_names:
         internal_dist_path = '/'.join([pex_info.internal_cache, distribution_name])
         dist = DistributionHelper.distribution_from_path(os.path.join(pex, internal_dist_path))
