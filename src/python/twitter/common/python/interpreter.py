@@ -364,7 +364,7 @@ class PythonInterpreter(object):
        :param extras: A mapping from (dist.key, dist.version) to dist.location
                       of the extras associated with this interpreter.
     """
-    self._binary = binary
+    self._binary = os.path.realpath(binary)
     self._binary_stat = os.stat(self._binary)
     self._extras = extras or {}
     self._identity = identity

@@ -1,6 +1,6 @@
 import itertools
 
-from .http import EggLink, SourceLink
+from .http.link import EggLink, SourceLink, WheelLink
 from .tracer import TRACER
 from .translator import ChainedTranslator
 
@@ -35,7 +35,8 @@ class Obtainer(object):
       self._translator = translators
 
   def translate_href(self, href):
-    for link_class in (EggLink, SourceLink):
+    # XXX This is broken
+    for link_class in (WheelLink, EggLink, SourceLink):
       try:
         return link_class(href, opener=self._crawler.opener)
       except link_class.InvalidLink:

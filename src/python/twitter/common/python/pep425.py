@@ -1,3 +1,8 @@
+import re
+
+from pkg_resources import get_supported_platform
+
+
 class PEP425Extras(object):
   """Extensions to platform handling beyond PEP425."""
 
@@ -19,7 +24,7 @@ class PEP425Extras(object):
     return platform.startswith('macosx')
 
   @classmethod
-  def iter_osx_platform_tags(cls, supported_platform):
+  def iter_compatible_osx_platforms(cls, supported_platform):
     MAJOR, MINOR, PLATFORM = range(1, 4)
     platform_match = cls.MACOSX_VERSION_STRING.match(supported_platform)
     platform_major, platform_minor, platform = (
@@ -31,7 +36,7 @@ class PEP425Extras(object):
   @classmethod
   def platform_iterator(cls, platform):
     if cls.is_macosx_platform(platform):
-      for plat in cls.iter_osx_platform_tags(platform):
+      for plat in cls.iter_compatible_osx_platforms(platform):
         yield plat
     else:
       yield platform
@@ -48,19 +53,19 @@ class PEP425(object):
   @classmethod
   def get_implementation_tag(cls, interpreter_subversion):
     return cls.INTERPRETER_TAGS.get(interpreter_subversion)
-  
+
   @classmethod
   def get_version_tag(cls, interpreter_version):
     return ''.join(map(str, interpreter_version[:2]))
 
   @classmethod
-  def get_platform_tag(cls):
-    return get_supported_platform()
-  
-  @classmethod
   def translate_platform_to_tag(cls, platform):
     return platform.replace('.', '_').replace('-', '_')
-    
+
+  @classmethod
+  def get_platform_tag(cls):
+    return cls.translate_platform_to_tag(get_supported_platform())
+
   # TODO(wickman) This implementation is technically incorrect but we need to be able to
   # predict the supported tags of an interpreter that may not be on this machine or
   # of a different platform.  Alternatively we could store the manifest of supported tags
@@ -72,7 +77,7 @@ class PEP425(object):
        :param version: E.g. '26', '33'
        :param platform: Platform as from :function:`pkg_resources.get_supported_platform`,
                         for example 'linux-x86_64' or 'macosx-10.4-x86_64'.
-       
+
        yields (pyver, abi, platform) tuples.
     """
     # Predict soabi for reasonable interpreters.  This is technically wrong but essentially right.
@@ -98,58 +103,15 @@ class PEP425(object):
         yield ('%s%d' % (i, major_version), 'none', p)
         for minor_version in minor_versions:
           yield ('%s%s' % (i, minor_version), 'none', p)
-  
+
   @classmethod
-  def iter_supported_tags(cls, interpreter, platform=get_supported_platform()):
+  def iter_supported_tags(cls, identity, platform=get_supported_platform()):
     """Iterate over the supported tag tuples of this interpreter.
-    
-       :param interpreter: :class:`PythonInterpreter` over which tags should iterate.
+
+       :param identity: :class:`PythonIdentity` over which tags should iterate.
     """
-    tag_iterator = cls._iter_supported_tags(interpreter.interpreter, interpreter.version, platform)
+    impl_tag = cls.get_implementation_tag(identity.interpreter)
+    vers_tag = cls.get_version_tag(identity.version)
+    tag_iterator = cls._iter_supported_tags(impl_tag, vers_tag, platform)
     for tag in tag_iterator:
       yield tag
-
-  """
-  @classmethod
-  def iter_provided_tags_from_egg(cls, dist):
-    if dist.py_version is None:
-      # we do not support unversioned eggs
-      return
-    version = ''.join(dist.py_version.split('.')[:2])
-    if dist.platform:
-      platform_iter = PEP425Extras.platform_iterator(dist.platform)
-      impl = 'cp'  # all platform-specific eggs must be presumed against cpython
-    else:
-      platform_iter = ('any',)
-      impl = 'py'
-    for platform in platform_iter:
-      yield ('%s%s' % (impl, version), 'none', platform)
-  
-  @classmethod
-  def iter_provided_tags_from_whl_name(cls, name):
-    wheel_base, _ = os.path.splitext(name)
-    try:
-      pytag, abitag, archtag = wheel_base.split('-')[-3:]
-    except ValueError:
-      return
-    for py in pytag.split('.'):
-      for abi in abitag.split('.'):
-        for arch in archtag.split('.'):
-          yield (py, abi, arch)
-  
-  @classmethod
-  def iter_provided_tags_from_whl(cls, dist):
-    wheel_base, _ = os.path.splitext(dist.location)
-    for tag in cls.iter_provided_tags_from_whl_name(wheel_base):
-      yield tag
-  
-  @classmethod
-  def iter_provided_tags(cls, distribution):
-    iterator = []
-    if distribution.location.endswith('.egg'):
-      iterator = cls.iter_provided_tags_from_egg(distribution)
-    elif distribution.location.endswith('.whl'):
-      iterator = cls.iter_provided_tags_from_whl(distribution)
-    for tags in iterator:
-      yield tags
-  """  

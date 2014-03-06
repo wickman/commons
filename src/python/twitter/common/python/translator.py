@@ -6,11 +6,12 @@ from zipimport import zipimporter
 
 from .common import chmod_plus_w, safe_rmtree, safe_mkdir, safe_mkdtemp
 from .compatibility import AbstractClass
-from .http import EggLink, SourceLink
+from .http.link import EggLink, SourceLink, WheelLink
 from .installer import Installer, EggInstaller
 from .interpreter import PythonInterpreter
 from .platforms import Platform
 from .tracer import TRACER
+from .wheel import distribution_from_zipped_wheel
 
 from pkg_resources import Distribution, EggMetadata, PathMetadata
 
@@ -126,12 +127,12 @@ class SourceTranslator(TranslatorBase):
 class EggTranslator(TranslatorBase):
   def __init__(self,
                install_cache=None,
+               interpreter=PythonInterpreter.get(),
                platform=Platform.current(),
-               python=Platform.python(),
                conn_timeout=None):
     self._install_cache = install_cache or safe_mkdtemp()
     self._platform = platform
-    self._python = python
+    self._python = interpreter.python
     self._conn_timeout = conn_timeout
 
   def translate(self, link):
@@ -148,6 +149,34 @@ class EggTranslator(TranslatorBase):
     return dist_from_egg(egg)
 
 
+# TODO(wickman) Collapse this with the EggTranslator.  Just need to have a
+# generic Distribution.from_path(...) method.
+class WheelTranslator(TranslatorBase):
+  def __init__(self,
+               install_cache=None,
+               interpreter=PythonInterpreter.get(),
+               platform=Platform.current(),
+               conn_timeout=None):
+    self._install_cache = install_cache or safe_mkdtemp()
+    self._platform = platform
+    self._identity = interpreter.identity
+    self._conn_timeout = conn_timeout
+
+  def translate(self, link):
+    """From a link, translate a distribution."""
+    if not isinstance(link, WheelLink):
+      return None
+    if not link.compatible(identity=self._identity, platform=self._platform):
+      return None
+    try:
+      whl = link.fetch(location=self._install_cache, conn_timeout=self._conn_timeout)
+    except link.UnreadableLink as e:
+      TRACER.log('Failed to fetch %s: %s' % (link, e))
+      return None
+    print('Returning dist!  %s' % whl)
+    return distribution_from_zipped_wheel(whl)
+
+
 class Translator(object):
   @staticmethod
   def default(install_cache=None,
@@ -158,7 +187,7 @@ class Translator(object):
     egg_translator = EggTranslator(
         install_cache=install_cache,
         platform=platform,
-        python=interpreter.python,
+        interpreter=interpreter,
         conn_timeout=conn_timeout)
 
     source_translator = SourceTranslator(

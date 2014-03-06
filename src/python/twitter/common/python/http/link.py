@@ -11,6 +11,8 @@ from .http import FetchError
 from ..base import maybe_requirement
 from ..common import safe_mkdir, safe_mkdtemp
 from ..compatibility import PY3
+from ..platforms import Platform
+from ..pep425 import PEP425
 
 from pkg_resources import (
     Distribution,
@@ -92,29 +94,24 @@ class ExtendedLink(Link):
     return NotImplementedError
 
   @property
-  def version(self):
-    return parse_version(self.raw_version)
-
-  @property
   def raw_version(self):
     return NotImplementedError
 
   @property
-  def py_version(self):
-    return None
-
-  @property
-  def platform(self):
-    return None
+  def version(self):
+    return parse_version(self.raw_version)
 
   def satisfies(self, requirement):
     """Does the signature of this filename match the requirement (pkg_resources.Requirement)?"""
     requirement = maybe_requirement(requirement)
-    distribution = Distribution(project_name=self.name, version=self.raw_version,
-      py_version=self.py_version, platform=self.platform)
-    if distribution.key != requirement.key:
+    link_name = safe_name(self.name).lower()
+    if link_name != requirement.key:
       return False
     return self.raw_version in requirement
+
+  def compatible(self, identity, platform=Platform.current()):
+    """Is this link compatible with the given :class:`PythonIdentity` identity and platform?"""
+    raise NotImplementedError
 
 
 class SourceLink(ExtendedLink):
@@ -194,6 +191,10 @@ class SourceLink(ExtendedLink):
     target = super(SourceLink, self).fetch(conn_timeout=conn_timeout)
     return self._unpack(target, location)
 
+  # SourceLinks are always compatible as they can be translated to a distribution.
+  def compatible(self, identity, platform=Platform.current()):
+    return True
+
 
 class EggLink(ExtendedLink):
   """A Target providing an egg."""
@@ -231,3 +232,49 @@ class EggLink(ExtendedLink):
   @property
   def platform(self):
     return self._platform
+
+  def compatible(self, identity, platform=Platform.current()):
+    if not Platform.version_compatible(self.py_version, identity.python):
+      return False
+    if not Platform.compatible(self.platform, platform):
+      return False
+    return True
+
+
+class WheelLink(ExtendedLink):
+  """A Target providing a wheel."""
+
+  def __init__(self, url, **kw):
+    super(WheelLink, self).__init__(url, **kw)
+    filename, ext = os.path.splitext(self.filename)
+    if ext.lower() != '.whl':
+      raise self.InvalidLink('Not a wheel: %s' % filename)
+    try:
+      self._name, self._raw_version, self._py_tag, self._abi_tag, self._arch_tag = (
+          filename.split('-'))
+    except ValueError:
+      raise self.InvalidLink('Wheel filename malformed.')
+    # See https://github.com/pypa/pip/issues/1150 for why this is unavoidable.
+    self._name.replace('_', '-')
+    self._raw_version.replace('_', '-')
+    self._supported_tags = frozenset(self._iter_tags())
+
+  @property
+  def name(self):
+    return self._name
+
+  @property
+  def raw_version(self):
+    return self._raw_version
+
+  def _iter_tags(self):
+    for py in self._py_tag.split('.'):
+      for abi in self._abi_tag.split('.'):
+        for arch in self._arch_tag.split('.'):
+          yield (py, abi, arch)
+
+  def compatible(self, identity, platform=Platform.current()):
+    for tag in PEP425.iter_supported_tags(identity, platform):
+      if tag in self._supported_tags:
+        return True
+    return False
