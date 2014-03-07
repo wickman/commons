@@ -10,6 +10,8 @@ from .translator import (
     ChainedTranslator,
     EggTranslator,
     SourceTranslator,
+    Translator,
+    WheelTranslator,
 )
 
 from pkg_resources import (
@@ -60,12 +62,18 @@ def resolve(requirements,
   platform = platform or Platform.current()
 
   # wire up translators / obtainer
-  shared_options = dict(install_cache=cache, platform=platform)
-  egg_translator = EggTranslator(python=interpreter.python, **shared_options)
-  cache_obtainer = Obtainer(crawler, [Fetcher([cache])], egg_translator) if cache else None
-  source_translator = SourceTranslator(interpreter=interpreter, **shared_options)
-  translator = ChainedTranslator(egg_translator, source_translator)
-  obtainer = Obtainer(crawler, fetchers, translator)
+  if cache:
+    shared_options = dict(install_cache=cache, platform=platform, interpreter=interpreter)
+    whl_translator = WheelTranslator(**shared_options)
+    egg_translator = EggTranslator(**shared_options)
+    translator = ChainedTranslator(whl_translator, egg_translator)
+    cache_obtainer = Obtainer(crawler, [Fetcher([cache])], translator)
+  else:
+    cache_obtainer = None
+
+  if not obtainer:
+    translator = Translator.default()
+    obtainer = Obtainer(crawler, fetchers, translator)
 
   # make installer
   def installer(req):

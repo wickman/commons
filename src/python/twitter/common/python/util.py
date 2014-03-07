@@ -48,6 +48,11 @@ class DistributionHelper(object):
        distributions, returns None."""
     distributions = list(find_distributions(path))
     if len(distributions) != 1:
+      print('Distributions from %s:' % path)
+      for dist in distributions:
+        print('  %s' % dist)
+      if not distributions:
+        print('  None')
       return None
     return distributions[0]
 

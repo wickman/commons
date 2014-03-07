@@ -85,7 +85,7 @@ def resolve_multi(config,
     working_set = WorkingSet(entries=[])
 
     shared_options = dict(install_cache=install_cache, platform=platform)
-    egg_translator = EggTranslator(python=interpreter.python, **shared_options)
+    egg_translator = EggTranslator(interpreter=interpreter, **shared_options)
     egg_obtainer = Obtainer(crawler, [Fetcher([install_cache])], egg_translator)
 
     def installer(req):

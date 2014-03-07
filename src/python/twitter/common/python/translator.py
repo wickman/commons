@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from abc import abstractmethod
 import os
+import warnings
 from zipimport import zipimporter
 
 from .common import chmod_plus_w, safe_rmtree, safe_mkdir, safe_mkdtemp
@@ -104,7 +105,9 @@ class SourceTranslator(TranslatorBase):
           return None
         target_path = os.path.join(self._install_cache, os.path.basename(dist_path))
         os.rename(dist_path, target_path)
-        dist = dist_from_egg(target_path)
+        dist = DistributionHelper.distribution_from_path(target_path)
+        if not dist:
+          return None
         if Platform.distribution_compatible(
             dist, python=self._interpreter.python, platform=self._platform):
           return dist
@@ -121,7 +124,12 @@ class BinaryTranslator(TranslatorBase):
                install_cache=None,
                interpreter=PythonInterpreter.get(),
                platform=Platform.current(),
+               python=None,
                conn_timeout=None):
+    if python:
+      warnings.warn('python= keyword argument to Translator is deprecated.')
+      if python != interpreter.python:
+        raise ValueError('Two different python interpreters supplied!')
     self._link_type = link_type
     self._install_cache = install_cache or safe_mkdtemp()
     self._platform = platform
@@ -130,7 +138,7 @@ class BinaryTranslator(TranslatorBase):
 
   def translate(self, link):
     """From a link, translate a distribution."""
-    if not isinstance(link, link_type):
+    if not isinstance(link, self._link_type):
       return None
     if not link.compatible(identity=self._identity, platform=self._platform):
       return None
@@ -139,8 +147,17 @@ class BinaryTranslator(TranslatorBase):
     except link.UnreadableLink as e:
       TRACER.log('Failed to fetch %s: %s' % (link, e))
       return None
-    print('Returning dist!  %s' % whl)
     return DistributionHelper.distribution_from_path(bdist)
+
+
+class EggTranslator(BinaryTranslator):
+  def __init__(self, **kw):
+    super(EggTranslator, self).__init__(EggLink, **kw)
+
+
+class WheelTranslator(BinaryTranslator):
+  def __init__(self, **kw):
+    super(WheelTranslator, self).__init__(WheelLink, **kw)
 
 
 class Translator(object):
@@ -150,16 +167,12 @@ class Translator(object):
               interpreter=PythonInterpreter.get(),
               conn_timeout=None):
 
-    egg_translator = BinaryTranslator(
-        EggLink,
-        install_cache=install_cache,
-        platform=platform,
-        interpreter=interpreter,
-        conn_timeout=conn_timeout)
-
-    source_translator = SourceTranslator(
+    shared_options = dict(
         install_cache=install_cache,
         interpreter=interpreter,
         conn_timeout=conn_timeout)
 
-    return ChainedTranslator(egg_translator, source_translator)
+    whl_translator = WheelTranslator(platform=platform, **shared_options)
+    egg_translator = EggTranslator(platform=platform, **shared_options)
+    source_translator = SourceTranslator(**shared_options)
+    return ChainedTranslator(whl_translator, egg_translator, source_translator)

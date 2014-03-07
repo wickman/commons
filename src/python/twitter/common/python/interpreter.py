@@ -161,6 +161,12 @@ class PythonIdentity(object):
     }
     return '#!/usr/bin/env %s' % hashbang_string
 
+  @property
+  def python(self):
+    # return the python version in the format of the 'python' key for distributions
+    # specifically, '2.6', '2.7', '3.2', etc.
+    return '%d.%d' % (self.version[0:2])
+
   def __str__(self):
     return '%s-%s.%s.%s' % (self._interpreter,
       self._version[0], self._version[1], self._version[2])
@@ -388,9 +394,7 @@ class PythonInterpreter(object):
 
   @property
   def python(self):
-    # return the python version in the format of the 'python' key for distributions
-    # specifically, '2.6', '2.7', '3.2', etc.
-    return '%d.%d' % (self._identity.version[0:2])
+    return self._identity.python
 
   @property
   def version(self):
