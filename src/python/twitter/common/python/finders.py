@@ -3,11 +3,6 @@ import pkgutil
 import zipimport
 
 import pkg_resources
-from pkg_resources import (
-    DistInfoDistribution,
-    find_distributions,
-    PathMetadata,
-)
 
 
 class ChainedFinder(object):
@@ -23,12 +18,19 @@ class ChainedFinder(object):
 
 
 def register_chained_finder(importer, finder):
-  """Register a new pkg_resources path finder that does not replace the existing finder."""
+  """Register a new pkg_resources path finder that does not replace the existing finder.
+
+     Currently pkg_resources.register_finder replaces a finder for an existing path
+     type.  This is not desirable -- instead we want to just add a fall-back finder.
+     This takes an existing finder for that type and appends a new one by creating
+     a ChainedFinder.
+  """
 
   # TODO(wickman) This is somewhat dangerous as it is not an exposed API,
   # but pkg_resources doesn't let us chain multiple distribution finders
   # together.  This is likely possible using importlib but that does us no
-  # good as the importlib machinery supporting this is 3.x-only.
+  # good as the importlib machinery supporting this is only available in
+  # Python >= 3.1.
   existing_finder = pkg_resources._distribution_finders.get(importer)
   if existing_finder:
     chained_finder = ChainedFinder([existing_finder, finder])
@@ -37,8 +39,9 @@ def register_chained_finder(importer, finder):
   pkg_resources.register_finder(importer, chained_finder)
 
 
-
 class WheelMetadata(pkg_resources.EggMetadata):
+  """Metadata provider for zipped wheels."""
+
   @classmethod
   def _split_wheelname(cls, wheelname):
     split_wheelname = wheelname.split('-')
@@ -61,6 +64,8 @@ class WheelMetadata(pkg_resources.EggMetadata):
 
 # See https://bitbucket.org/tarek/distribute/issue/274
 class FixedEggMetadata(pkg_resources.EggMetadata):
+  """An EggMetadata provider that has functional parity with the disk-based provider."""
+
   @classmethod
   def normalized_elements(cls, path):
     path_split = path.split('/')
@@ -69,7 +74,7 @@ class FixedEggMetadata(pkg_resources.EggMetadata):
     return path_split
 
   def _fn(self, base, resource_name):
-    #original_fn = super(FixedEggMetadata, self)._fn(base, resource_name)
+    # super() does not work here as EggMetadata is an old-style class.
     original_fn = pkg_resources.EggMetadata._fn(self, base, resource_name)
     return '/'.join(self.normalized_elements(original_fn))
 
@@ -82,14 +87,15 @@ class FixedEggMetadata(pkg_resources.EggMetadata):
 
 
 def wheel_from_metadata(location, metadata):
-  if not metadata.has_metadata(DistInfoDistribution.PKG_INFO):
+  if not metadata.has_metadata(pkg_resources.DistInfoDistribution.PKG_INFO):
     return None
 
   from email.parser import Parser
-  pkg_info = Parser().parsestr(metadata.get_metadata(DistInfoDistribution.PKG_INFO))
-  return DistInfoDistribution(
+  pkg_info = Parser().parsestr(metadata.get_metadata(pkg_resources.DistInfoDistribution.PKG_INFO))
+  return pkg_resources.DistInfoDistribution(
       location=location,
       metadata=metadata,
+      # TODO(wickman) Are these necessary or will they get picked up correctly?
       project_name=pkg_info.get('Name'),
       version=pkg_info.get('Version'),
       # TODO(wickman) We currently don't use this though for completeness it may make
@@ -103,12 +109,13 @@ def find_wheels_on_path(importer, path_item, only=False):
   if not only:
     for entry in os.listdir(path_item):
       if entry.lower().endswith('.whl'):
-        for dist in find_distributions(os.path.join(path_item, entry)):
+        for dist in pkg_resources.find_distributions(os.path.join(path_item, entry)):
           yield dist
 
 
 def find_eggs_in_zip(importer, path_item, only=False):
   if importer.archive.endswith('.whl'):
+    # Defer to wheel importer
     return
   metadata = FixedEggMetadata(importer)
   if metadata.has_metadata('PKG-INFO'):
@@ -130,7 +137,7 @@ def find_wheels_in_zip(importer, path_item, only=False):
 
 
 def register_finders():
-  """Register a pkg_resources finder for wheels contained in zips."""
+  """Register finders necessary for PEX to function properly."""
 
   # replace the zip finder
   pkg_resources.register_finder(
