@@ -3,7 +3,6 @@ from __future__ import absolute_import
 from abc import abstractmethod
 import os
 import warnings
-from zipimport import zipimporter
 
 from .common import chmod_plus_w, safe_rmtree, safe_mkdir, safe_mkdtemp
 from .compatibility import AbstractClass
@@ -13,8 +12,6 @@ from .interpreter import PythonInterpreter
 from .platforms import Platform
 from .tracer import TRACER
 from .util import DistributionHelper
-
-from pkg_resources import Distribution, EggMetadata, PathMetadata
 
 
 class TranslatorBase(AbstractClass):
@@ -108,6 +105,7 @@ class SourceTranslator(TranslatorBase):
         dist = DistributionHelper.distribution_from_path(target_path)
         if not dist:
           return None
+        # TODO(wickman) Using Link() seems like we're breaking some abstractions.
         if Platform.distribution_compatible(
             dist, python=self._interpreter.python, platform=self._platform):
           return dist

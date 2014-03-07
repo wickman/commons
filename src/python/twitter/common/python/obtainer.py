@@ -51,7 +51,7 @@ class Obtainer(object):
       preference = 1
     else:
       preference = 0
-    return (link.version, isinstance(link, EggLink))
+    return (link.version, preference)
 
   def iter_unordered(self, req):
     urls = list(itertools.chain(*[fetcher.urls(req) for fetcher in self._fetchers]))

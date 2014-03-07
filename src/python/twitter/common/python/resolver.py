@@ -9,7 +9,6 @@ from .platforms import Platform
 from .translator import (
     ChainedTranslator,
     EggTranslator,
-    SourceTranslator,
     Translator,
     WheelTranslator,
 )

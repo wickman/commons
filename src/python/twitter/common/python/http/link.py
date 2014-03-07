@@ -15,7 +15,6 @@ from ..platforms import Platform
 from ..pep425 import PEP425
 
 from pkg_resources import (
-    Distribution,
     EGG_NAME,
     parse_version,
     safe_name,

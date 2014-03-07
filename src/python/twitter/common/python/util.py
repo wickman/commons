@@ -7,12 +7,7 @@ import os
 import shutil
 import uuid
 
-from pkg_resources import (
-    Distribution,
-    EggMetadata,
-    PathMetadata,
-    find_distributions,
-)
+from pkg_resources import find_distributions
 
 from .common import safe_open, safe_rmtree
 
