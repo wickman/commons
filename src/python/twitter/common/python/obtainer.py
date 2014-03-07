@@ -58,8 +58,6 @@ class Obtainer(object):
     for link in filter(None, map(self.translate_href, self._crawler.crawl(*urls))):
       if link.satisfies(req):
         yield link
-      else:
-        TRACER.log('unsatisfied: %s and %s' % (link, req))
 
   def iter(self, req):
     """Given a req, return a list of links that satisfy the requirement in best match order."""
@@ -69,11 +67,7 @@ class Obtainer(object):
   def obtain(self, req):
     with TRACER.timed('Obtaining %s' % req):
       links = list(self.iter(req))
-      TRACER.log('Got ordered links:\n\t%s' % '\n\t'.join(map(str, links)), V=2)
       for link in links:
-        TRACER.log('Translating %s' % link)
         dist = self._translator.translate(link)
-        TRACER.log('  translated to %s' % dist)
         if dist:
-          TRACER.log('Picked %s -> %s' % (link, dist), V=2)
           return dist

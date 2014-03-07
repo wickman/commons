@@ -202,13 +202,8 @@ class PEXBuilder(object):
     setuptools = DistributionHelper.distribution_from_path(
         self._interpreter.get_location('setuptools'))
 
-    TRACER.log('setuptools: %s %s' % (setuptools, setuptools.location))
-
     for fn, content_stream in DistributionHelper.walk_data(setuptools):
-      TRACER.log('setuptools has %s' % fn)
-
       if fn == 'pkg_resources.py' or fn.startswith('_markerlib'):
-        TRACER.log('Writing %s' % fn)
         self._chroot.write(content_stream.read(), os.path.join(self.BOOTSTRAP_DIR, fn), 'resource')
 
     libraries = (
