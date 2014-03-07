@@ -69,6 +69,21 @@ def exec_function(ast, globals_map):
 """, "<exec_function>", "exec"))
 
 
+if PY3:
+  from contextlib import ExitStack
+
+  @contextlib.contextmanager
+  def nested(*context_managers):
+    enters = []
+    with ExitStack() as stack:
+      for manager in context_managers:
+        enters.append(stack.enter_context(manager))
+      yield tuple(enters)
+
+else:
+  from contextlib import nested
+
+
 __all__ = (
   'AbstractClass',
   'BytesIO',
@@ -77,6 +92,7 @@ __all__ = (
   'StringIO',
   'bytes',
   'exec_function'
+  'nested',
   'string',
   'to_bytes',
 )

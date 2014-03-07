@@ -10,7 +10,7 @@ from twitter.common.dirutil import safe_mkdir, safe_mkdtemp
 from twitter.common.python.installer import Installer
 from twitter.common.python.util import CacheHelper, DistributionHelper
 
-from twitter.common.python.test_common import (
+from twitter.common.python.testing import (
     make_distribution,
     temporary_content,
     write_zipfile,

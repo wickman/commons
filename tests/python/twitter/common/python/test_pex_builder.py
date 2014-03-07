@@ -4,11 +4,11 @@ import zipfile
 
 from twitter.common.contextutil import temporary_dir
 from twitter.common.dirutil import safe_mkdir
+from twitter.common.python.compatibility import nested
 from twitter.common.python.pex import PEX
 from twitter.common.python.pex_builder import PEXBuilder
 from twitter.common.python.util import DistributionHelper
-
-from twitter.common.python.test_common import make_distribution, nested
+from twitter.common.python.testing import make_distribution
 
 
 exe_main = """
