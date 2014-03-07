@@ -72,7 +72,7 @@ def resolve(requirements,
     cache_obtainer = None
 
   if not obtainer:
-    translator = Translator.default()
+    translator = Translator.default(install_cache=cache, platform=platform, interpreter=interpreter)
     obtainer = Obtainer(crawler, fetchers, translator)
 
   # make installer
