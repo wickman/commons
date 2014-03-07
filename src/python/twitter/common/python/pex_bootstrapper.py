@@ -2,7 +2,7 @@ import contextlib
 import os
 import zipfile
 
-from .wheel import register_finders
+from .finders import register_finders
 
 __all__ = ('bootstrap_pex',)
 
