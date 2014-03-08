@@ -1,3 +1,29 @@
+# ==================================================================================================
+# Copyright 2014 Twitter, Inc.
+# --------------------------------------------------------------------------------------------------
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this work except in compliance with the License.
+# You may obtain a copy of the License in the LICENSE file, or at:
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==================================================================================================
+
+"""The finders we wish we had in setuptools.
+
+twitter.common.python.finders augments pkg_resources with additional finders to achieve functional
+parity between wheels and eggs in terms of findability with find_distributions.
+
+To use:
+  >>> from twitter.common.python.finders import register_finders
+  >>> register_finders()
+"""
+
 import os
 import pkgutil
 import zipimport
@@ -17,26 +43,51 @@ class ChainedFinder(object):
         yield dist
 
 
-def register_chained_finder(importer, finder):
-  """Register a new pkg_resources path finder that does not replace the existing finder.
+# The following methods are somewhat dangerous as pkg_resources._distribution_finders is not an
+# exposed API.  As it stands, pkg_resources doesn't provide an API to chain multiple distribution
+# finders together.  This is probably possible using importlib but that does us no good as the
+# importlib machinery supporting this is only available in Python >= 3.1.
 
-     Currently pkg_resources.register_finder replaces a finder for an existing path
-     type.  This is not desirable -- instead we want to just add a fall-back finder.
-     This takes an existing finder for that type and appends a new one by creating
-     a ChainedFinder.
-  """
+def get_finder(importer):
+  if not hasattr(pkg_resources, '_distribution_finders'):
+    return None
+  return pkg_resources._distribution_finders.get(importer)
 
-  # TODO(wickman) This is somewhat dangerous as it is not an exposed API,
-  # but pkg_resources doesn't let us chain multiple distribution finders
-  # together.  This is likely possible using importlib but that does us no
-  # good as the importlib machinery supporting this is only available in
-  # Python >= 3.1.
-  existing_finder = pkg_resources._distribution_finders.get(importer)
-  if existing_finder:
-    chained_finder = ChainedFinder([existing_finder, finder])
+
+def add_finder(importer, finder):
+  """Register a new pkg_resources path finder that does not replace the existing finder."""
+
+  existing_finder = get_finder(importer)
+
+  if not existing_finder:
+    pkg_resources.register_finder(importer, finder)
+    return
+
+  if isinstance(existing_finder, ChainedFinder):
+    chained_finder = ChainedFinder(existing_finder.finders + [finder])
   else:
-    chained_finder = finder
+    chained_finder = ChainedFinder([existing_finder, finder])
+
   pkg_resources.register_finder(importer, chained_finder)
+
+
+def remove_finder(importer, finder):
+  """Remove an existing finder from pkg_resources."""
+
+  existing_finder = get_finder(importer)
+
+  if not existing_finder:
+    return
+
+  if isinstance(existing_finder, ChainedFinder):
+    try:
+      existing_finder.finders.remove(finder)
+    except ValueError:
+      return
+    if len(existing_finder.finders) == 1:
+      pkg_resources.register_finder(importer, existing_finder.finders[0])
+  else:
+    pkg_resources.register_finder(importer, pkg_resources.find_nothing)
 
 
 class WheelMetadata(pkg_resources.EggMetadata):
@@ -95,11 +146,9 @@ def wheel_from_metadata(location, metadata):
   return pkg_resources.DistInfoDistribution(
       location=location,
       metadata=metadata,
-      # TODO(wickman) Are these necessary or will they get picked up correctly?
+      # TODO(wickman) Is this necessary or will they get picked up correctly?
       project_name=pkg_info.get('Name'),
       version=pkg_info.get('Version'),
-      # TODO(wickman) We currently don't use this though for completeness it may make
-      # sense to implement.
       platform=None)
 
 
@@ -136,21 +185,39 @@ def find_wheels_in_zip(importer, path_item, only=False):
     yield dist
 
 
-_MONKEYPATCHED = False
+__PREVIOUS_FINDER = None
 
 
 def register_finders():
   """Register finders necessary for PEX to function properly."""
-  global _MONKEYPATCHED
 
-  if _MONKEYPATCHED:
+  # If the previous finder is set, then we've already monkeypatched, so skip.
+  global __PREVIOUS_FINDER
+  if __PREVIOUS_FINDER:
     return
 
-  # replace the zip finder
+  # replace the zip finder with our own implementation of find_eggs_in_zip which uses the correct
+  # metadata handler, in addition to find_wheels_in_zip
+  previous_finder = get_finder(zipimport.zipimporter)
+  assert previous_finder, 'This appears to be using an incompatible setuptools.'
+
   pkg_resources.register_finder(
       zipimport.zipimporter, ChainedFinder([find_eggs_in_zip, find_wheels_in_zip]))
 
   # append the wheel finder
-  register_chained_finder(pkgutil.ImpImporter, find_wheels_on_path)
+  add_finder(pkgutil.ImpImporter, find_wheels_on_path)
 
-  _MONKEYPATCHED = True
+  __PREVIOUS_FINDER = previous_finder
+
+
+def unregister_finders():
+  """Unregister finders necessary for PEX to function properly."""
+
+  global __PREVIOUS_FINDER
+  if not __PREVIOUS_FINDER:
+    return
+
+  pkg_resources.register_finder(zipimport.zipimporter, __PREVIOUS_FINDER)
+  remove_finder(pkgutil.ImpImporter, find_wheels_on_path)
+
+  __PREVIOUS_FINDER = None
