@@ -185,7 +185,4 @@ class PythonInterpreterCache(object):
   def select_interpreter(self, compatibilities, allow_multiple=False):
     if allow_multiple:
       return compatibilities
-    me = PythonInterpreter.get()
-    if me in compatibilities:
-      return [me]
     return [min(compatibilities)] if compatibilities else []

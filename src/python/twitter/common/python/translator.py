@@ -6,7 +6,8 @@ import warnings
 
 from .common import chmod_plus_w, safe_rmtree, safe_mkdir, safe_mkdtemp
 from .compatibility import AbstractClass
-from .installer import EggInstaller
+from .finders import register_finders
+from .installer import WheelInstaller
 from .interpreter import PythonInterpreter
 from .package import (
     EggPackage,
@@ -69,7 +70,7 @@ class SourceTranslator(TranslatorBase):
                platform=Platform.current(),
                use_2to3=False,
                conn_timeout=None,
-               installer_impl=EggInstaller):
+               installer_impl=WheelInstaller):
     self._interpreter = interpreter
     self._installer_impl = installer_impl
     self._use_2to3 = use_2to3
@@ -112,7 +113,11 @@ class SourceTranslator(TranslatorBase):
           return None
         if not target_package.compatible(self._interpreter.identity, platform=self._platform):
           return None
-        return DistributionHelper.distribution_from_path(target_path)
+        # Make sure finders have been registered in case not running from within a pex.
+        register_finders()
+        dist = DistributionHelper.distribution_from_path(target_path)
+        TRACER.log('Dist is %s' % dist)
+        return dist
     finally:
       if installer:
         installer.cleanup()
@@ -154,12 +159,12 @@ class BinaryTranslator(TranslatorBase):
 
 class EggTranslator(BinaryTranslator):
   def __init__(self, **kw):
-    super(EggTranslator, self).__init__(EggLink, **kw)
+    super(EggTranslator, self).__init__(EggPackage, **kw)
 
 
 class WheelTranslator(BinaryTranslator):
   def __init__(self, **kw):
-    super(WheelTranslator, self).__init__(WheelLink, **kw)
+    super(WheelTranslator, self).__init__(WheelPackage, **kw)
 
 
 class Translator(object):
