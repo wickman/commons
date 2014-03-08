@@ -1,10 +1,13 @@
 from __future__ import absolute_import, print_function
 
 import os
+import site
 import sys
 import uuid
 
 from .common import open_zip, safe_mkdir, safe_rmtree
+from .interpreter import PythonInterpreter
+from .package import distribution_compatible
 from .pex_builder import PEXBuilder
 from .pex_info import PexInfo
 from .platforms import Platform
@@ -99,14 +102,15 @@ class PEXEnvironment(Environment):
         for dist in cls.write_zipped_internal_cache(pex, pex_info):
           yield dist
 
-  def __init__(self, pex, pex_info, platform=Platform.current(), python=Platform.python()):
+  def __init__(self, pex, pex_info, interpreter=None, **kw):
     self._internal_cache = os.path.join(pex, pex_info.internal_cache)
     self._pex = pex
     self._pex_info = pex_info
     self._activated = False
     self._working_set = None
-    super(PEXEnvironment, self).__init__(platform=platform, python=python,
-        search_path=sys.path if pex_info.inherit_path else [])
+    self._interpreter = interpreter or PythonInterpreter.get()
+    super(PEXEnvironment, self).__init__(
+        search_path=sys.path if pex_info.inherit_path else [], **kw)
 
   def update_candidate_distributions(self, distribution_iter):
     for dist in distribution_iter:
@@ -115,7 +119,7 @@ class PEXEnvironment(Environment):
           self.add(dist)
 
   def can_add(self, dist):
-    return Platform.distribution_compatible(dist, self.python, self.platform)
+    return distribution_compatible(dist, self._interpreter, self.platform)
 
   def activate(self):
     if not self._activated:
@@ -150,8 +154,12 @@ class PEXEnvironment(Environment):
         raise
 
     for dist in resolved:
-      with TRACER.timed('Activated %s' % dist):
+      with TRACER.timed('Activating %s' % dist):
         working_set.add(dist)
         dist.activate()
+
+        if os.path.isdir(dist.location):
+          with TRACER.timed('Adding sitedir'):
+            site.addsitedir(dist.location)
 
     return working_set

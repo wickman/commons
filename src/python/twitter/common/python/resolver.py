@@ -5,6 +5,7 @@ from .fetcher import Fetcher, PyPIFetcher
 from .http import Crawler
 from .interpreter import PythonInterpreter
 from .obtainer import Obtainer
+from .package import distribution_compatible
 from .platforms import Platform
 from .translator import (
     ChainedTranslator,
@@ -20,8 +21,13 @@ from pkg_resources import (
 
 
 class ResolverEnvironment(Environment):
+  def __init__(self, interpreter, *args, **kw):
+    kw['python'] = interpreter.python
+    self.__interpreter = interpreter
+    super(ResolverEnvironment, self).__init__(*args, **kw)
+
   def can_add(self, dist):
-    return Platform.distribution_compatible(dist, python=self.python, platform=self.platform)
+    return distribution_compatible(dist, self.__interpreter, platform=self.platform)
 
 
 def requirement_is_exact(req):
@@ -84,5 +90,5 @@ def resolve(requirements,
 
   # resolve
   working_set = WorkingSet(entries=[])
-  env = ResolverEnvironment(search_path=[], platform=platform, python=interpreter.python)
+  env = ResolverEnvironment(interpreter, search_path=[], platform=platform)
   return working_set.resolve(requirements, env=env, installer=installer)

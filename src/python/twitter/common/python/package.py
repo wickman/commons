@@ -6,6 +6,7 @@ import zipfile
 from .base import maybe_requirement
 from .common import safe_mkdtemp
 from .http.link import Link
+from .interpreter import PythonInterpreter
 from .platforms import Platform
 from .pep425 import PEP425, PEP425Extras
 
@@ -226,3 +227,13 @@ class WheelPackage(Package):
 Package.register(SourcePackage)
 Package.register(EggPackage)
 Package.register(WheelPackage)
+
+
+def distribution_compatible(dist, interpreter=None, platform=None):
+  interpreter = interpreter or PythonInterpreter.get()
+  platform = platform or Platform.current()
+
+  package = Package.from_href(dist.location)
+  if not package:
+    return False
+  return package.compatible(interpreter.identity, platform=platform)

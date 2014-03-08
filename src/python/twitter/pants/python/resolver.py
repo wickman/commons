@@ -8,6 +8,7 @@ from twitter.common.python.fetcher import Fetcher, PyPIFetcher
 from twitter.common.python.http import Crawler
 from twitter.common.python.obtainer import Obtainer
 from twitter.common.python.interpreter import PythonInterpreter
+from twitter.common.python.package import distribution_compatible
 from twitter.common.python.platforms import Platform
 from twitter.common.python.resolver import requirement_is_exact
 from twitter.common.python.translator import (
@@ -44,10 +45,14 @@ def crawler_from_config(config, conn_timeout=None):
 
 
 class PantsEnvironment(Environment):
+  def __init__(self, interpreter, platform=None):
+    platform = platform or Platform.current()
+    self.__interpreter = interpreter
+    super(PantsEnvironment, self).__init__(
+        search_path=[], python=interpreter.python, platform=platform)
 
-  # TODO(wickman) Use the twitter.common.python version once wheels are implemented there.
   def can_add(self, dist):
-    return Platform.distribution_compatible(dist, python=self.python, platform=self.platform)
+    return distribution_compatible(dist, self.__interpreter, platform=self.platform)
 
 
 def resolve_multi(config,
@@ -86,7 +91,7 @@ def resolve_multi(config,
   fetchers = fetchers_from_config(config)
 
   for platform in platforms:
-    env = PantsEnvironment(search_path=[], platform=platform, python=interpreter.python)
+    env = PantsEnvironment(interpreter, platform=platform)
     working_set = WorkingSet(entries=[])
 
     shared_options = dict(install_cache=install_cache, platform=platform)
