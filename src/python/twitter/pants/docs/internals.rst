@@ -7,7 +7,7 @@ concentrating on how to tailor Pants to your needs, such as integrating it with
 other tools.
 
 If you want to run Pants or to write BUILD files, you probably want
-the :doc:`README` instead.  But if you want to support a new tool or a
+the :doc:`first_concepts` instead.  But if you want to support a new tool or a
 new language, read on.
 
 *********************************
@@ -166,7 +166,12 @@ Code Layout
   **`*.md`** Docs too important for `docs/`.
 
 `base <https://github.com/twitter/commons/tree/master/src/python/twitter/pants/base/>`_
-  Defines `Target` and TODO
+  Defines `Target` and other fundamental pieces/base classes.
+  As a rule of thumb, code in ``base`` shouldn't ``import`` anything in
+  non-base Pants; but many things in non-base Pants ``import`` from ``base``.
+  If you're editing code in ``base`` and find yourself referring to
+  the JVM (or other target-language-specific things), you're probably editing
+  the wrong thing and want to look further up the inheritance tree.
 
 `bin <https://github.com/twitter/commons/tree/master/src/python/twitter/pants/bin/>`_
   The "main" of Pants itself lives here.
