@@ -113,11 +113,7 @@ class SourceTranslator(TranslatorBase):
           return None
         if not target_package.compatible(self._interpreter.identity, platform=self._platform):
           return None
-        # Make sure finders have been registered in case not running from within a pex.
-        register_finders()
-        dist = DistributionHelper.distribution_from_path(target_path)
-        TRACER.log('Dist is %s' % dist)
-        return dist
+        return DistributionHelper.distribution_from_path(target_path)
     finally:
       if installer:
         installer.cleanup()

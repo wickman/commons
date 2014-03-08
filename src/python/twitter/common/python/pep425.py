@@ -6,7 +6,6 @@ from pkg_resources import get_supported_platform
 class PEP425Extras(object):
   """Extensions to platform handling beyond PEP425."""
 
-  MACOSX_VERSION_STRING = re.compile(r"macosx-(\d+)\.(\d+)-(\S+)")
   MACOSX_PLATFORM_COMPATIBILITY = {
     'i386'      : ('i386',),
     'ppc'       : ('ppc',),
@@ -24,14 +23,28 @@ class PEP425Extras(object):
     return platform.startswith('macosx')
 
   @classmethod
+  def parse_macosx_tag(cls, platform_tag):
+    invalid_tag = ValueError('invalid macosx tag: %s' % platform_tag)
+    if not cls.is_macosx_platform(platform_tag):
+      raise invalid_tag
+    segments = platform_tag.split('_', 3)
+    if len(segments) != 4:
+      raise invalid_tag
+    if segments[0] != 'macosx':
+      raise invalid_tag
+    try:
+      major, minor = int(segments[1]), int(segments[2])
+      platform = segments[3]
+    except ValueError:
+      raise invalid_tag
+    return major, minor, platform
+
+  @classmethod
   def iter_compatible_osx_platforms(cls, supported_platform):
-    MAJOR, MINOR, PLATFORM = range(1, 4)
-    platform_match = cls.MACOSX_VERSION_STRING.match(supported_platform)
-    platform_major, platform_minor, platform = (
-        platform_match.group(MAJOR), platform_match.group(MINOR), platform_match.group(PLATFORM))
-    for minor in range(int(platform_minor), -1, -1):
+    platform_major, platform_minor, platform = cls.parse_macosx_tag(supported_platform)
+    for minor in range(platform_minor, -1, -1):
       for binary_compat in set((platform,) + cls.MACOSX_PLATFORM_COMPATIBILITY.get(platform, ())):
-        yield 'macosx-%s.%s-%s' % (platform_major, minor, binary_compat)
+        yield 'macosx_%s_%s_%s' % (platform_major, minor, binary_compat)
 
   @classmethod
   def platform_iterator(cls, platform):
@@ -90,7 +103,7 @@ class PEP425(object):
     for minor in range(int(version[1]), -1, -1):
       minor_versions.append('%d%d' % (major_version, minor))
 
-    platforms = [cls.translate_platform_to_tag(p) for p in PEP425Extras.platform_iterator(platform)]
+    platforms = list(PEP425Extras.platform_iterator(cls.translate_platform_to_tag(platform)))
 
     # interpreter specific
     for p in platforms:

@@ -13,7 +13,9 @@ from twitter.common.python.resolver import requirement_is_exact
 from twitter.common.python.translator import (
     ChainedTranslator,
     EggTranslator,
-    SourceTranslator)
+    WheelTranslator,
+    SourceTranslator,
+)
 
 from .python_setup import PythonSetup
 
@@ -89,7 +91,9 @@ def resolve_multi(config,
 
     shared_options = dict(install_cache=install_cache, platform=platform)
     egg_translator = EggTranslator(interpreter=interpreter, **shared_options)
-    egg_obtainer = Obtainer(crawler, [Fetcher([install_cache])], egg_translator)
+    whl_translator = WheelTranslator(interpreter=interpreter, **shared_options)
+    egg_obtainer = Obtainer(crawler, [Fetcher([install_cache])],
+        ChainedTranslator(whl_translator, egg_translator))
 
     def installer(req):
       # Attempt to obtain the egg from the local cache.  If it's an exact match, we can use it.
@@ -104,7 +108,7 @@ def resolve_multi(config,
            interpreter=interpreter,
            use_2to3=getattr(req, 'use_2to3', False),
            **shared_options)
-      translator = ChainedTranslator(egg_translator, source_translator)
+      translator = ChainedTranslator(whl_translator, egg_translator, source_translator)
       obtainer = Obtainer(
           crawler,
           [Fetcher([req.repository])] if getattr(req, 'repository', None) else fetchers,

@@ -7,7 +7,7 @@ from .base import maybe_requirement
 from .common import safe_mkdtemp
 from .http.link import Link
 from .platforms import Platform
-from .pep425 import PEP425
+from .pep425 import PEP425, PEP425Extras
 
 from pkg_resources import (
     EGG_NAME,
@@ -18,11 +18,11 @@ from pkg_resources import (
 
 class Package(Link):
   _REGISTRY = set()
-  
+
   @classmethod
   def register(cls, package_type):
     cls._REGISTRY.add(package_type)
-  
+
   @classmethod
   def from_href(cls, href, **kw):
     for package_type in cls._REGISTRY:
@@ -213,7 +213,8 @@ class WheelPackage(Package):
     for py in self._py_tag.split('.'):
       for abi in self._abi_tag.split('.'):
         for arch in self._arch_tag.split('.'):
-          yield (py, abi, arch)
+          for real_arch in PEP425Extras.platform_iterator(arch):
+            yield (py, abi, real_arch)
 
   def compatible(self, identity, platform=Platform.current()):
     for tag in PEP425.iter_supported_tags(identity, platform):

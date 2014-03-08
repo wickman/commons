@@ -10,6 +10,7 @@ import uuid
 from pkg_resources import find_distributions
 
 from .common import safe_open, safe_rmtree
+from .finders import register_finders
 
 
 class DistributionHelper(object):
@@ -40,7 +41,10 @@ class DistributionHelper(object):
     """Returns a Distribution given a location.
 
        If no distributions found or if the path contains multiple ambiguous
-       distributions, returns None."""
+       distributions, returns None.
+    """
+    # Monkeypatch pkg_resources finders should it not already be so.
+    register_finders()
     distributions = list(find_distributions(path))
     if len(distributions) != 1:
       return None

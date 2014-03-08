@@ -36,7 +36,7 @@ class Obtainer(object):
       SourcePackage,
   )
 
-  @classmethod  
+  @classmethod
   def package_type_precedence(cls, package, precedence=DEFAULT_PACKAGE_PRECEDENCE):
     for rank, package_type in enumerate(reversed(precedence)):
       if isinstance(package, package_type):

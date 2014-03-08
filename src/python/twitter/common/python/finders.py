@@ -138,13 +138,14 @@ def find_wheels_in_zip(importer, path_item, only=False):
 
 _MONKEYPATCHED = False
 
+
 def register_finders():
   """Register finders necessary for PEX to function properly."""
   global _MONKEYPATCHED
-  
+
   if _MONKEYPATCHED:
     return
-  
+
   # replace the zip finder
   pkg_resources.register_finder(
       zipimport.zipimporter, ChainedFinder([find_eggs_in_zip, find_wheels_in_zip]))
