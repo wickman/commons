@@ -1,22 +1,12 @@
 import re
 
+from .platforms import Platform
+
 from pkg_resources import get_supported_platform
 
 
 class PEP425Extras(object):
   """Extensions to platform handling beyond PEP425."""
-
-  MACOSX_PLATFORM_COMPATIBILITY = {
-    'i386'      : ('i386',),
-    'ppc'       : ('ppc',),
-    'x86_64'    : ('x86_64',),
-    'ppc64'     : ('ppc64',),
-    'fat'       : ('i386', 'ppc'),
-    'intel'     : ('i386', 'x86_64'),
-    'fat3'      : ('i386', 'ppc', 'x86_64'),
-    'fat64'     : ('ppc64', 'x86_64'),
-    'universal' : ('i386', 'ppc', 'ppc64', 'x86_64')
-  }
 
   @classmethod
   def is_macosx_platform(cls, platform):
@@ -42,8 +32,10 @@ class PEP425Extras(object):
   @classmethod
   def iter_compatible_osx_platforms(cls, supported_platform):
     platform_major, platform_minor, platform = cls.parse_macosx_tag(supported_platform)
+    platform_equivalents = set(Platform.MACOSX_PLATFORM_COMPATIBILITY.get(platform, ()))
+    platform_equivalents.add(platform)
     for minor in range(platform_minor, -1, -1):
-      for binary_compat in set((platform,) + cls.MACOSX_PLATFORM_COMPATIBILITY.get(platform, ())):
+      for binary_compat in platform_equivalents:
         yield 'macosx_%s_%s_%s' % (platform_major, minor, binary_compat)
 
   @classmethod

@@ -41,6 +41,11 @@ class ChainedFinder(object):
     for finder in self.finders:
       for dist in finder(importer, path_item, only=only):
         yield dist
+  
+  def __eq__(self, other):
+    if not isinstance(other, ChainedFinder):
+      return False
+    return self.finders == other.finders
 
 
 # The following methods are somewhat dangerous as pkg_resources._distribution_finders is not an
@@ -86,6 +91,8 @@ def remove_finder(importer, finder):
       return
     if len(existing_finder.finders) == 1:
       pkg_resources.register_finder(importer, existing_finder.finders[0])
+    elif len(existing_finder.finders) == 0:
+      pkg_resources.register_finder(importer, pkg_resources.find_nothing)
   else:
     pkg_resources.register_finder(importer, pkg_resources.find_nothing)
 
@@ -196,11 +203,12 @@ def register_finders():
   if __PREVIOUS_FINDER:
     return
 
-  # replace the zip finder with our own implementation of find_eggs_in_zip which uses the correct
-  # metadata handler, in addition to find_wheels_in_zip
+  # save previous finder so that it can be restored
   previous_finder = get_finder(zipimport.zipimporter)
   assert previous_finder, 'This appears to be using an incompatible setuptools.'
 
+  # replace the zip finder with our own implementation of find_eggs_in_zip which uses the correct
+  # metadata handler, in addition to find_wheels_in_zip
   pkg_resources.register_finder(
       zipimport.zipimporter, ChainedFinder([find_eggs_in_zip, find_wheels_in_zip]))
 

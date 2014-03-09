@@ -18,12 +18,24 @@ python_test_suite(name = 'all',
   dependencies = [
     pants('tests/python/twitter/common/python/http:all'),
     pants(':test_environment'),
+    pants(':test_finders'),
     pants(':test_interpreter'),
     pants(':test_obtainer'),
     pants(':test_package'),
+    pants(':test_pep425'),
     pants(':test_platform'),
     pants(':test_pex_builder'),
     pants(':test_util'),
+  ]
+)
+
+python_tests(
+  name = 'combined',
+  sources = globs('test_*.py'),
+  dependencies = [
+    pants('src/python/twitter/common/contextutil'),
+    pants('src/python/twitter/common/python'),
+    pants('3rdparty/python:mock'),
   ]
 )
 
@@ -32,6 +44,14 @@ python_tests(name = 'test_environment',
   dependencies = [
     pants('src/python/twitter/common/contextutil'),
     pants('src/python/twitter/common/python')
+  ]
+)
+
+python_tests(name = 'test_finders',
+  sources = ['test_finders.py'],
+  dependencies = [
+    pants('src/python/twitter/common/python'),
+    pants('3rdparty/python:mock'),
   ]
 )
 
@@ -54,6 +74,13 @@ python_tests(name = 'test_package',
   sources = ['test_package.py'],
   dependencies = [
     pants('src/python/twitter/common/contextutil'),
+    pants('src/python/twitter/common/python'),
+  ]
+)
+
+python_tests(name = 'test_pep425',
+  sources = ['test_pep425.py'],
+  dependencies = [
     pants('src/python/twitter/common/python'),
   ]
 )
