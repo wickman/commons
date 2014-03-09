@@ -105,5 +105,6 @@ python_tests(name = 'test_util',
   dependencies = [
     pants('src/python/twitter/common/contextutil'),
     pants('src/python/twitter/common/python'),
+    python_requirement('wheel'),
   ]
 )

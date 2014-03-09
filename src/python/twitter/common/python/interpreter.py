@@ -420,12 +420,12 @@ class PythonInterpreter(object):
     return hash(self._binary_stat)
 
   def __eq__(self, other):
-    if not isinstance(other, self.__class__):
+    if not isinstance(other, PythonInterpreter):
       return False
     return self._binary_stat == other._binary_stat
 
   def __lt__(self, other):
-    if not isinstance(other, self.__class__):
+    if not isinstance(other, PythonInterpreter):
       return False
     return self.version < other.version
 

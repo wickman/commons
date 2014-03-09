@@ -87,10 +87,10 @@ PROJECT_CONTENT = {
 
 
 @contextlib.contextmanager
-def make_distribution(name='my_project', zipped=False, zip_safe=True):
+def make_distribution(name='my_project', installer_impl=EggInstaller, zipped=False, zip_safe=True):
   interp = {'project_name': name, 'zip_safe': zip_safe}
   with temporary_content(PROJECT_CONTENT, interp=interp) as td:
-    installer = EggInstaller(td)
+    installer = installer_impl(td)
     dist_location = installer.bdist()
     if zipped:
       yield DistributionHelper.distribution_from_path(dist_location)
