@@ -46,7 +46,6 @@ class Obtainer(object):
 
   @classmethod
   def package_precedence(cls, package, precedence=DEFAULT_PACKAGE_PRECEDENCE):
-    package_version = package.version
     return (package.version, cls.package_type_precedence(package, precedence=precedence))
 
   def __init__(self, crawler, fetchers, translators, precedence=DEFAULT_PACKAGE_PRECEDENCE):

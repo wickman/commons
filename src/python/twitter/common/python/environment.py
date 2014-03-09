@@ -10,7 +10,6 @@ from .interpreter import PythonInterpreter
 from .package import distribution_compatible
 from .pex_builder import PEXBuilder
 from .pex_info import PexInfo
-from .platforms import Platform
 from .tracer import Tracer
 from .util import CacheHelper, DistributionHelper
 
@@ -63,11 +62,6 @@ class PEXEnvironment(Environment):
         TRACER.log('Adding to the head of %s.__path__: %s' % (module.__name__, module_dir))
         module.__path__.insert(0, module_dir)
 
-  # N.B. wheel support for:
-  #
-  # 1. DistributionHelper.distribution_from_path
-  # 2. DistributionHelper.zipsafe
-  # 3. CacheHelper.cache_distribution [which uses find_distributions]
   @classmethod
   def write_zipped_internal_cache(cls, pex, pex_info):
     prefix_length = len(pex_info.internal_cache) + 1
@@ -85,7 +79,8 @@ class PEXEnvironment(Environment):
           continue
         dist_digest = pex_info.distributions.get(distribution_name) or CacheHelper.zip_hash(
             zf, internal_dist_path)
-        target_dir = os.path.join(pex_info.install_cache, '%s.%s' % (distribution_name, dist_digest))
+        target_dir = os.path.join(pex_info.install_cache, '%s.%s' % (
+            distribution_name, dist_digest))
         with TRACER.timed('Caching %s into %s' % (dist, target_dir)):
           distributions.append(CacheHelper.cache_distribution(zf, internal_dist_path, target_dir))
     return distributions
@@ -141,7 +136,6 @@ class PEXEnvironment(Environment):
 
     working_set = WorkingSet([])
 
-    # for req in all_reqs:
     with TRACER.timed('Resolving %s' %
         ' '.join(map(str, all_reqs)) if all_reqs else 'empty dependency list'):
       try:

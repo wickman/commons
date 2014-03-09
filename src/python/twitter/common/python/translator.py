@@ -6,7 +6,6 @@ import warnings
 
 from .common import chmod_plus_w, safe_rmtree, safe_mkdir, safe_mkdtemp
 from .compatibility import AbstractClass
-from .finders import register_finders
 from .installer import WheelInstaller
 from .interpreter import PythonInterpreter
 from .package import (

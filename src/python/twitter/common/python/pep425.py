@@ -1,5 +1,3 @@
-import re
-
 from .platforms import Platform
 
 from pkg_resources import get_supported_platform

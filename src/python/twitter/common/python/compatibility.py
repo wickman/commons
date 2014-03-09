@@ -70,9 +70,9 @@ def exec_function(ast, globals_map):
 
 
 if PY3:
-  from contextlib import ExitStack
+  from contextlib import contextmanager, ExitStack
 
-  @contextlib.contextmanager
+  @contextmanager
   def nested(*context_managers):
     enters = []
     with ExitStack() as stack:
