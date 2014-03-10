@@ -357,8 +357,7 @@ class PythonInterpreter(object):
         break
     else:
       raise cls.InterpreterNotFound('Could not find interpreter matching filter!')
-    cls.sanitize_environment()
-    os.execv(pi.binary, [pi.binary] + sys.argv)
+    os.execve(pi.binary, [pi.binary] + sys.argv, cls.sanitized_environment())
 
   def __init__(self, binary, identity, extras=None):
     """Construct a PythonInterpreter.
