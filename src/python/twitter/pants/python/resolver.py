@@ -8,12 +8,15 @@ from twitter.common.python.fetcher import Fetcher, PyPIFetcher
 from twitter.common.python.http import Crawler
 from twitter.common.python.obtainer import Obtainer
 from twitter.common.python.interpreter import PythonInterpreter
+from twitter.common.python.package import distribution_compatible
 from twitter.common.python.platforms import Platform
 from twitter.common.python.resolver import requirement_is_exact
 from twitter.common.python.translator import (
     ChainedTranslator,
     EggTranslator,
-    SourceTranslator)
+    WheelTranslator,
+    SourceTranslator,
+)
 
 from .python_setup import PythonSetup
 
@@ -42,10 +45,14 @@ def crawler_from_config(config, conn_timeout=None):
 
 
 class PantsEnvironment(Environment):
+  def __init__(self, interpreter, platform=None):
+    platform = platform or Platform.current()
+    self.__interpreter = interpreter
+    super(PantsEnvironment, self).__init__(
+        search_path=[], python=interpreter.python, platform=platform)
 
-  # TODO(wickman) Use the twitter.common.python version once wheels are implemented there.
   def can_add(self, dist):
-    return Platform.distribution_compatible(dist, python=self.python, platform=self.platform)
+    return distribution_compatible(dist, self.__interpreter, platform=self.platform)
 
 
 def resolve_multi(config,
@@ -84,12 +91,14 @@ def resolve_multi(config,
   fetchers = fetchers_from_config(config)
 
   for platform in platforms:
-    env = PantsEnvironment(search_path=[], platform=platform, python=interpreter.python)
+    env = PantsEnvironment(interpreter, platform=platform)
     working_set = WorkingSet(entries=[])
 
     shared_options = dict(install_cache=install_cache, platform=platform)
-    egg_translator = EggTranslator(python=interpreter.python, **shared_options)
-    egg_obtainer = Obtainer(crawler, [Fetcher([install_cache])], egg_translator)
+    egg_translator = EggTranslator(interpreter=interpreter, **shared_options)
+    whl_translator = WheelTranslator(interpreter=interpreter, **shared_options)
+    egg_obtainer = Obtainer(crawler, [Fetcher([install_cache])],
+        ChainedTranslator(whl_translator, egg_translator))
 
     def installer(req):
       # Attempt to obtain the egg from the local cache.  If it's an exact match, we can use it.
@@ -104,7 +113,7 @@ def resolve_multi(config,
            interpreter=interpreter,
            use_2to3=getattr(req, 'use_2to3', False),
            **shared_options)
-      translator = ChainedTranslator(egg_translator, source_translator)
+      translator = ChainedTranslator(whl_translator, egg_translator, source_translator)
       obtainer = Obtainer(
           crawler,
           [Fetcher([req.repository])] if getattr(req, 'repository', None) else fetchers,
