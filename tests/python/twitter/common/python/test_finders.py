@@ -8,15 +8,6 @@ import mock
 import pkg_resources
 
 
-"""
-    get_finder,
-    add_finder,
-    remove_finder,
-    WheelMetadata,
-    FixedEggMetadata,
-"""
-
-
 def test_chained_finder():
   def finder1(importer, path_item, only=False):
     for foo in ('foo', 'bar'):

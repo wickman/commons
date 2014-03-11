@@ -41,7 +41,7 @@ class ChainedFinder(object):
     for finder in self.finders:
       for dist in finder(importer, path_item, only=only):
         yield dist
-  
+
   def __eq__(self, other):
     if not isinstance(other, ChainedFinder):
       return False

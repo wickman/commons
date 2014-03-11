@@ -1,3 +1,10 @@
+"""PEP425 handling for twitter.common.python
+
+PEP425 (http://legacy.python.org/dev/peps/pep-0425/) describes a tagging system used to determine
+whether or not a distribution's platform is compatible with the current platform.  It is the
+tagging system used to describe platform compatibility for wheel files.
+"""
+
 from .platforms import Platform
 
 from pkg_resources import get_supported_platform
@@ -38,6 +45,10 @@ class PEP425Extras(object):
 
   @classmethod
   def platform_iterator(cls, platform):
+    """Iterate over all compatible platform tags of a supplied platform tag.
+
+       :param platform: the platform tag to iterate over
+    """
     if cls.is_macosx_platform(platform):
       for plat in cls.iter_compatible_osx_platforms(platform):
         yield plat
@@ -81,7 +92,7 @@ class PEP425(object):
        :param platform: Platform as from :function:`pkg_resources.get_supported_platform`,
                         for example 'linux-x86_64' or 'macosx-10.4-x86_64'.
 
-       yields (pyver, abi, platform) tuples.
+       Returns an iterator over (pyver, abi, platform) tuples.
     """
     # Predict soabi for reasonable interpreters.  This is technically wrong but essentially right.
     abis = []
@@ -111,7 +122,12 @@ class PEP425(object):
   def iter_supported_tags(cls, identity, platform=get_supported_platform()):
     """Iterate over the supported tag tuples of this interpreter.
 
-       :param identity: :class:`PythonIdentity` over which tags should iterate.
+       :param identity: python interpreter identity over which tags should iterate.
+       :type identity: :class:`PythonIdentity`
+       :param platform: python platform over which tags should iterate, by default the current
+                        platform.
+
+       Returns an iterator over valid PEP425 tag tuples.
     """
     impl_tag = cls.get_implementation_tag(identity.interpreter)
     vers_tag = cls.get_version_tag(identity.version)

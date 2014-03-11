@@ -68,7 +68,6 @@ def exec_function(ast, globals_map):
   return locals_map
 """, "<exec_function>", "exec"))
 
-
 if PY3:
   from contextlib import contextmanager, ExitStack
 
@@ -91,7 +90,7 @@ __all__ = (
   'PY3',
   'StringIO',
   'bytes',
-  'exec_function'
+  'exec_function',
   'nested',
   'string',
   'to_bytes',

@@ -29,16 +29,6 @@ python_test_suite(name = 'all',
   ]
 )
 
-python_tests(
-  name = 'combined',
-  sources = globs('test_*.py'),
-  dependencies = [
-    pants('src/python/twitter/common/contextutil'),
-    pants('src/python/twitter/common/python'),
-    pants('3rdparty/python:mock'),
-  ]
-)
-
 python_tests(name = 'test_environment',
   sources = ['test_environment.py'],
   dependencies = [
