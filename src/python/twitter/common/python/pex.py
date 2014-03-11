@@ -214,14 +214,9 @@ class PEX(object):
     runner()
 
   def cmdline(self, args=()):
-    """
-      The commandline to run this environment.
+    """The commandline to run this environment.
 
-      Optional arguments:
-        binary: The binary to run instead of the entry point in the environment
-        interpreter_args: Arguments to be passed to the interpreter before, e.g. '-E' or
-          ['-m', 'pylint.lint']
-        args: Arguments to be passed to the application being invoked by the environment.
+    :param args: Arguments to be passed to the application being invoked by the environment.
     """
     cmds = [self._interpreter.binary]
     cmds.append(self._pex)
@@ -229,12 +224,14 @@ class PEX(object):
     return cmds
 
   def run(self, args=(), with_chroot=False, blocking=True, setsid=False):
-    """
-      Run the PythonEnvironment in an interpreter in a subprocess.
+    """Run the PythonEnvironment in an interpreter in a subprocess.
 
-      with_chroot: Run with cwd set to the environment's working directory [default: False]
-      blocking: If true, return the return code of the subprocess.
-                If false, return the Popen object of the invoked subprocess.
+    :param args: Arguments to be passed to the application being invoked by the environment.
+    :param with_chroot: Run with cwd set to the environment's working directory
+    :param blocking: If true, return the return code of the subprocess.  If false, return the
+      Popen object of the invoked subprocess.
+    :param setsid: If true, invoke the process in its own session.
+
     """
     import subprocess
     self.clean_environment(forking=True)

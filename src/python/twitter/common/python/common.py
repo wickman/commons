@@ -139,9 +139,7 @@ def chmod_plus_x(path):
 
 
 def chmod_plus_w(path):
-  """
-    Equivalent of unix `chmod +w path`
-  """
+  """Equivalent of unix `chmod +w path`"""
   path_mode = os.stat(path).st_mode
   path_mode &= int('777', 8)
   path_mode |= stat.S_IWRITE
@@ -149,12 +147,11 @@ def chmod_plus_w(path):
 
 
 def touch(file, times=None):
-  """
-    Equivalent of unix `touch path`.
+  """Equivalent of unix `touch path`.
 
-    :file The file to touch.
-    :times Either a tuple of (atime, mtime) or else a single time to use for both.  If not
-           specified both atime and mtime are updated to the current time.
+  :file The file to touch.
+  :times Either a tuple of (atime, mtime) or else a single time to use for both.  If not
+  specified both atime and mtime are updated to the current time.
   """
   if times:
     if len(times) > 2:

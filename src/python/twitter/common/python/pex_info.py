@@ -13,8 +13,7 @@ PexPlatform = namedtuple('PexPlatform', 'interpreter version strict')
 
 
 class PexInfo(object):
-  """
-    PEX metadata.
+  """PEX metadata.
 
     # Build metadata:
     build_properties: BuildProperties # (key-value information about the build system)
