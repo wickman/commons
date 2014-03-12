@@ -14,15 +14,15 @@ twitter.common.python
 
 twitter.common.python contains the Python packaging and distribution
 libraries in use by Twitter and available from the `twitter commons
-<https://github.com/twitter/commons>`_.  The most notable component of
-twitter.common.python is the
-.pex (Python EXecutable) format which is a general purpose Python environment virtualization
+<https://github.com/twitter/commons>`_.  The most notable components of
+twitter.common.python are the
+.pex (Python EXecutable) format and the associated ``pex`` tool which provide a general purpose Python environment virtualization
 solution similar in spirit to `virtualenv <http://virtualenv.org>`_   PEX files have been used by Twitter
 to deploy Python applications to production since 2011.
 
 To learn more about what the .pex format is and why it could be useful for
 you, see :ref:`whatispex`  For the impatient, there is also a lightning
-talk published by Twitter University: `WTF is PEX? 
+talk published by Twitter University: `WTF is PEX?
 <http://www.youtube.com/watch?v=NmpnGhRwsu0>`_.
 
 

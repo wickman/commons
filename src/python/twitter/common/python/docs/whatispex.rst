@@ -10,8 +10,9 @@ tl;dr
 .pex files are just carefully constructed zip files with a ``#!/usr/bin/env python`` and
 special ``__main__.py``
 
+
 Why .pex files?
-====================
+---------------
 
 Files with the .pex extension -- "PEX files" or ".pex files" -- are
 self-contained executable Python virtual environments.  PEX files make it
@@ -20,7 +21,7 @@ easy to deploy Python applications: the deployment process becomes simply
 
 
 How do .pex files work?
-=======================
+-----------------------
 
 PEX files rely on a quirk in the Python importer that considers the presence
 of a ``__main__.py`` within the module as a signal to treat that module as
@@ -34,3 +35,8 @@ regardless if ``my_module`` is on disk or within a zip file.  Adding
 executable Python program.  twitter.common.python takes advantage of this
 feature in order to build executable .pex files.
 
+
+Examples
+--------
+
+For instructions on how to build .pex along with several illustrative examples, see :ref:`buildingpex`.
